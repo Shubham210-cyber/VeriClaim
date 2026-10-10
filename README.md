@@ -5,7 +5,7 @@ Deterministic rules decide eligibility checks; AI (optional) only summarizes. No
 insurance decision: **all data and policies are synthetic, and all demo documents are stamped
 "FAKE - SYNTHETIC DEMO DOCUMENT".**
 
-Docs: [`docs/DECISIONS.md`](docs/DECISIONS.md) (authoritative decisions) Â· [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) Â·
+Docs: [`docs/DECISIONS.md`](docs/DECISIONS.md) (authoritative decisions), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and
 [`docs/PROGRESS.md`](docs/PROGRESS.md) (handoff log).
 
 ## Run it (Windows)
@@ -64,7 +64,8 @@ cd frontend; npm run build                          # type-check + production bu
 - Extraction handles labelled fields, marketplace-style invoices (dates, line-item table, amount in words) and claim-hinted verification; truly free-form documents are not understood.
 - The Sonnet adapter is implemented but was not exercised against the live API in development.
 - The event type is classified by the reviewer, not inferred from text.
-- No frontend unit tests; the UI was type-checked and built but not browser-tested in an automated way.
+- No frontend unit tests; the UI is type-checked, built and visually checked with headless-browser screenshots only.
+- OCR can misread currency symbols and separators on low-resolution scans; the amount in words is used as a cross-check.
 - Not a fraud detector: discrepancies are reported neutrally as "needs clarification".
 - SQLAlchemy is pinned to 2.0.x (a Windows Application Control policy blocked the 2.1 compiled module).
 
