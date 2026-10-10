@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+node_modules/
+dist/
+*.db
+*.sqlite3
+storage/*
+!storage/.gitkeep
+.pytest_cache/
+.claude/

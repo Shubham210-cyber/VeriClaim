@@ -11,6 +11,9 @@ recommendation.
 
 ## Before every implementation task
 
+0.  Read `docs/DECISIONS.md` (overrides other docs) and `docs/PROGRESS.md`
+    (current status). After each phase update PROGRESS.md, commit, and
+    `git push origin main`.
 1.  Read `README.md`, `PROJECT_BRIEF.md`, and the relevant
     architecture/data/rules/API document.
 2.  Inspect the current repository before editing. Do not assume files
