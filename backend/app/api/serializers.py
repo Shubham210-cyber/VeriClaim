@@ -24,15 +24,15 @@ def policy_out(p: Policy) -> dict:
             "cap_is_eligibility_ceiling": p.cap_is_eligibility_ceiling, "note": p.note, "source_label": p.source_label}
 
 
-def claim_summary(c: Claim, rec: str | None = None) -> dict:
+def claim_summary(c: Claim, rec: str | None = None, pname: str | None = None) -> dict:
     return {"id": c.id, "claim_number": c.claim_number, "product_type": c.product_type, "product_brand": c.product_brand,
-            "product_model": c.product_model, "claim_type": c.claim_type, "policy_id": c.policy_id, "status": c.status,
+            "product_model": c.product_model, "claim_type": c.claim_type, "policy_id": c.policy_id, "policy_name": pname, "status": c.status,
             "event_type": c.event_type, "submitted_at": ts(c.submitted_at), "latest_recommendation": rec,
             "claimed_amount": c.claimed_amount, "currency": c.currency}
 
 
-def claim_out(c: Claim) -> dict:
-    return {**claim_summary(c), "policy_version": c.policy_version, "device_identifier": c.device_identifier,
+def claim_out(c: Claim, pname: str | None = None) -> dict:
+    return {**claim_summary(c, None, pname), "policy_version": c.policy_version, "device_identifier": c.device_identifier,
             "repair_already_performed": c.repair_already_performed, "incident_date": d(c.incident_date),
             "damage_or_failure_description": c.damage_or_failure_description, "created_at": ts(c.created_at),
             "updated_at": ts(c.updated_at)}

@@ -32,9 +32,10 @@ class MockProvider:
 
     def summarize_findings(self, payload: dict) -> AiSummary:
         failing = [f for f in payload["findings"] if f["result"] in ("FAIL", "INDETERMINATE") and f["category"] != "NOTE"]
-        pts = [f"{f['rule_id']}: {f['title']}" for f in failing][:8]
-        text = (f"Recommendation {payload['recommendation']}. " +
-                (f"{len(failing)} rule(s) need attention." if failing else "All applicable checks passed."))
+        pts = [f["title"] for f in failing][:8]
+        rec = payload["recommendation"].replace("_", " ").lower()
+        text = (f"Recommendation: {rec}. " +
+                (f"{len(failing)} check(s) need attention." if failing else "All applicable checks passed."))
         return AiSummary(summary=text, key_points=pts, cited_rule_ids=[f["rule_id"] for f in failing][:8])
 
 

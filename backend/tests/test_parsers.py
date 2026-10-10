@@ -88,6 +88,14 @@ def test_parse_amount_picks_last_value():
     assert parse_amount("TOTAL: Rs. 662.14 Rs. 6,180.00") == ("6180.00", "INR")
 
 
+def test_claimed_model_missing_from_readable_invoice_is_not_a_silent_pass(client):
+    c = make_claim(client)   # claims "Northstar N14"
+    upload(client, c["id"], b"Purchase Date: 2026-06-01\nSerial Number: NS-N14-000123\nTotal Amount: INR 100.00\n")
+    ev = client.post(f"/api/v1/claims/{c['id']}/evaluate").json()
+    rule = next(f for f in ev["findings"] if f["rule_id"].startswith("CON-001"))
+    assert rule["result"] == "INDETERMINATE" and ev["recommendation"] == "MORE_INFORMATION_REQUIRED"
+
+
 tesseract_missing = not Path(settings.tesseract_cmd).exists()
 
 

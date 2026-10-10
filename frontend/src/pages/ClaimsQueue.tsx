@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api, fmtDate, label } from '../api'
+import { api, fmtDate, label, money } from '../api'
 import { Badge, Empty, ErrorBox, Spinner } from '../components/ui'
 import type { ClaimSummary } from '../types'
 
@@ -37,51 +37,54 @@ export default function ClaimsQueue() {
     }
   }
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value })
+  const filtered = Object.values(f).some(Boolean)
 
   return (
     <>
       <div className="page-head">
-        <div><h1>Claims queue</h1><p className="muted">Reviewer decision support for laptop and phone warranty/insurance claims.</p></div>
+        <div><h1>Claims</h1><p className="muted">Review warranty and insurance claims for laptops and phones, backed by the customer's documents.</p></div>
         <div className="row">
-          <button className="btn" onClick={seed} disabled={busy}>{busy ? 'Loading demo…' : 'Load demo data'}</button>
-          <Link className="btn primary" to="/claims/new">New claim</Link>
+          <button className="btn" onClick={seed} disabled={busy} title="Adds four sample claims with fake documents">{busy ? 'Adding samples…' : 'Add sample claims'}</button>
+          <Link className="btn primary" to="/claims/new">+ New claim</Link>
         </div>
       </div>
       <div className="filters" role="search">
-        <input placeholder="Search claim no. or model" value={f.q} onChange={set('q')} aria-label="Search" />
+        <input className="grow" placeholder="Search by claim number, brand or model" value={f.q} onChange={set('q')} aria-label="Search claims" />
         <select value={f.status} onChange={set('status')} aria-label="Status">
-          <option value="">All statuses</option>{STATUSES.map((s) => <option key={s} value={s}>{label(s)}</option>)}
+          <option value="">Any status</option>{STATUSES.map((s) => <option key={s} value={s}>{label(s)}</option>)}
         </select>
-        <select value={f.product_type} onChange={set('product_type')} aria-label="Product">
-          <option value="">All products</option><option value="LAPTOP">Laptop</option><option value="MOBILE_PHONE">Mobile phone</option>
+        <select value={f.product_type} onChange={set('product_type')} aria-label="Device">
+          <option value="">Any device</option><option value="LAPTOP">Laptop</option><option value="MOBILE_PHONE">Mobile phone</option>
         </select>
         <select value={f.claim_type} onChange={set('claim_type')} aria-label="Claim type">
-          <option value="">Warranty + insurance</option><option value="WARRANTY">Warranty</option><option value="INSURANCE">Insurance</option>
+          <option value="">Warranty and insurance</option><option value="WARRANTY">Warranty</option><option value="INSURANCE">Insurance</option>
         </select>
         <label className="inline">From <input type="date" value={f.submitted_from} onChange={set('submitted_from')} /></label>
         <label className="inline">To <input type="date" value={f.submitted_to} onChange={set('submitted_to')} /></label>
       </div>
       {err && <ErrorBox message={err} retry={load} />}
       {!err && !data && <Spinner />}
-      {data && data.items.length === 0 && <Empty>No claims match. Use <strong>Load demo data</strong> to add the four synthetic demo claims.</Empty>}
+      {data && data.items.length === 0 && (
+        <Empty>{filtered ? 'No claims match these filters.' : <>No claims yet. Create one, or choose <strong>Add sample claims</strong> to explore with fake data.</>}</Empty>
+      )}
       {data && data.items.length > 0 && (
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Claim</th><th>Product</th><th>Type</th><th>Status</th><th>System recommendation</th><th>Submitted</th></tr></thead>
+            <thead><tr><th>Claim</th><th>Device</th><th>Cover</th><th>Status</th><th>Our recommendation</th><th>Submitted</th></tr></thead>
             <tbody>
               {data.items.map((c) => (
                 <tr key={c.id}>
-                  <td><Link to={`/claims/${c.id}`}><strong>{c.claim_number}</strong></Link></td>
-                  <td>{[c.product_brand, c.product_model].filter(Boolean).join(' ') || label(c.product_type)}</td>
-                  <td>{label(c.claim_type)}</td>
+                  <td><Link to={`/claims/${c.id}`}><strong>{c.claim_number}</strong></Link>{c.claimed_amount && <div className="muted small">{money(c.claimed_amount, c.currency)}</div>}</td>
+                  <td>{[c.product_brand, c.product_model].filter(Boolean).join(' ') || label(c.product_type)}<div className="muted small">{label(c.product_type)}</div></td>
+                  <td>{c.policy_name ?? label(c.claim_type)}</td>
                   <td><Badge value={c.status} /></td>
                   <td><Badge value={c.latest_recommendation} /></td>
-                  <td className="muted">{fmtDate(c.submitted_at)}</td>
+                  <td className="muted small">{fmtDate(c.submitted_at)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <div className="muted small pad">{data.total} claim(s)</div>
+          <div className="muted small pad">{data.total} claim{data.total === 1 ? '' : 's'}</div>
         </div>
       )}
     </>

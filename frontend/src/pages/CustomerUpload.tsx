@@ -22,25 +22,26 @@ export default function CustomerUpload() {
 
   return (
     <div className="customer">
-      <h1>Upload requested documents</h1>
-      <p className="muted small">Synthetic Hackathon Data — Not a Real Insurance Decision. Use only fake/demo documents.</p>
+      <div className="brand center">VeriClaim</div>
+      <h1>We need a few more documents</h1>
       {err && <ErrorBox message={err} />}
       {!err && !info && <Spinner />}
       {info && (
         <>
-          <p>Claim reference <strong>{info.claim_reference}</strong> · link expires {fmtDate(info.expires_at)} · {info.remaining_uploads} upload(s) remaining</p>
+          <p className="muted">Claim <strong>{info.claim_reference}</strong>. Please upload the items below before {fmtDate(info.expires_at)}. You can upload up to {info.remaining_uploads} more file{info.remaining_uploads === 1 ? '' : 's'}.</p>
           {info.requested_items.length === 0 && <Empty>Nothing is currently requested.</Empty>}
           {info.requested_items.map((it, i) => (
             <Item key={i} item={it} token={token} disabled={info.remaining_uploads <= 0} done={done.includes(it.item_type + i)}
-              onDone={() => { setDone([...done, it.item_type + i]); load() }} idx={i} />
+              onDone={() => { setDone([...done, it.item_type + i]); load() }} />
           ))}
+          <p className="muted small">Accepted: PDF, PNG, JPEG or text files up to 10 MB. Demo environment: please use fake or sample documents only.</p>
         </>
       )}
     </div>
   )
 }
 
-function Item({ item, token, disabled, done, onDone, idx }: { item: RequestedItem; token: string; disabled: boolean; done: boolean; onDone: () => void; idx: number }) {
+function Item({ item, token, disabled, done, onDone }: { item: RequestedItem; token: string; disabled: boolean; done: boolean; onDone: () => void }) {
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -50,12 +51,12 @@ function Item({ item, token, disabled, done, onDone, idx }: { item: RequestedIte
     try { await api.upload('/public/upload-request/evidence', file, item.item_type, { 'X-Upload-Token': token }); onDone() } catch (e) { setErr((e as Error).message) } finally { setBusy(false) }
   }
   return (
-    <div className="panel pad" key={idx}>
+    <div className="panel">
       <strong>{label(item.item_type)}</strong>
       <p>{item.description}</p>
-      {done ? <p className="ok">✓ Received. Thank you — a reviewer will take it from here.</p> : (
+      {done ? <p className="ok">✓ Received. Thank you, a reviewer will take it from here.</p> : (
         <>
-          <input type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} aria-label={`File for ${label(item.item_type)}`} />
+          <input type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} aria-label={`File for ${label(item.item_type)}`} />{' '}
           <button className="btn primary" disabled={!file || busy || disabled} onClick={send}>{busy ? 'Uploading…' : 'Upload'}</button>
           {err && <ErrorBox message={err} />}
         </>

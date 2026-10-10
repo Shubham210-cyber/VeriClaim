@@ -1,4 +1,4 @@
-# PROGRESS (handoff log -- update after every phase)
+﻿# PROGRESS (handoff log -- update after every phase)
 
 If context is lost: read CLAUDE.md, DECISIONS.md, this file, then continue
 with the first unchecked phase.
@@ -28,4 +28,8 @@ Code layout: `backend/` (FastAPI), `frontend/` (Vite React TS), `docs/`,
 - Demo OCR verified: CP-DEMO-001..004 -> APPROVAL / MORE_INFO / REJECTION / HUMAN_REVIEW with real Tesseract.
 - NEXT: optional - browser smoke test of UI, Sonnet live test with a key, fix GitHub push access.
 - GitHub push blocked: saved git credential (NiranjanSathishkumar) has no write access to Shubham210-cyber/VeriClaim (HTTP 403). Commits are local until access is fixed.
+
+
+- OCR v2 + product polish done (see DECISIONS.md). 53 backend tests pass; frontend builds; verified with real Amazon invoice (date 2018-03-30, Nokia 2, INR 6180) and headless-browser screenshots.
+- UI labels: 'Add sample claims' (was Load demo data), 'Review claim', 'Your decision'.
 

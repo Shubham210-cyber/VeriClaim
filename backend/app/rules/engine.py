@@ -318,6 +318,14 @@ def pol_008(c: Ctx):
 def con_001(c: Ctx):
     rid, t = "CON-001_PRODUCT_MODEL_MISMATCH", "Invoice model matches claim"
     cf, df = c.claim_fact(FieldName.PRODUCT_MODEL), c.best_doc(FieldName.PRODUCT_MODEL, [EvidenceType.PURCHASE_INVOICE])
+    inv = c.ev(EvidenceType.PURCHASE_INVOICE)
+    if cf is not None and df is None and inv is not None and inv.status != "FAILED":
+        # A readable invoice that never mentions the claimed model must not pass silently.
+        return _out(rid, R.INDETERMINATE, S.MEDIUM, "Product model not found on the invoice",
+                    f"The claim says '{cf.raw}', but that model name could not be found on the invoice. It may be a different "
+                    "product or the text may be unclear; this needs a quick check, not a conclusion.", C.CLARIFY, facts=[cf],
+                    reason_code="MODEL_NOT_FOUND", recommended_action="Check the invoice's product line against the claimed model.",
+                    request={"item_type": "PURCHASE_INVOICE", "description": "Upload an invoice that clearly shows the product model."})
     if cf is None or df is None:
         return _na(rid, t)
     if not (c.reliable(cf) and c.reliable(df)):

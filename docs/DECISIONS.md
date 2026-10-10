@@ -131,3 +131,23 @@ Demo CP-DEMO-004 is fixed at **HUMAN_REVIEW_REQUIRED**.
 - `GET /claims` adds `submitted_from`, `submitted_to` (ISO dates).
 - Claim numbers: `CP-YYYY-NNNN`; demo seeds use `CP-DEMO-00N`.
 - Claim POST additionally accepts `event_type` and `repair_already_performed`.
+
+## OCR and extraction v2 (real-world invoices)
+- OCR preprocessing: grayscale, upscale to ~2400px wide, autocontrast, sharpen; Tesseract runs in two layout
+  modes (psm 6 and psm 4) and the lines are merged (better variant first). Per-line confidence = median word
+  confidence, capped at 0.90.
+- Parsers match values by shape (date / identifier / money) with the label anywhere on the line, so merged
+  two-column lines work. Dates accept `30.03.2018`; ambiguous numeric dates are still never guessed.
+- Amount: last money value on the labelled line; else the spelled-out "Amount in Words" total
+  (`words_to_number`, refuses unknown words). When both exist and agree, confidence is boosted; when they
+  disagree, confidence is forced to 0.5 (verification).
+- Product model: explicit label, else the claimed model located literally in the text (a verification, quotes
+  the document), else the invoice line-item table guess capped at 0.75 (< 0.80 threshold, so it never accuses).
+  CON-001 says INDETERMINATE (MODEL_NOT_FOUND) if a readable invoice never shows the claimed model.
+- CON-008 only considers fields rules actually use (purchase_amount is informational, excluded).
+- Limit: OCR can misread the rupee symbol/separators; amounts are only used by CON-006 (repair receipts).
+
+## Product naming (UI)
+- UI brand is **VeriClaim**. Users never see policy IDs, rule IDs or enum names. Policies show friendly names
+  (e.g. "Laptop Manufacturer Warranty (12 months)"); rule IDs are behind a "Technical details" toggle.
+- API still uses stable IDs; `policy_name` is added to claim responses.

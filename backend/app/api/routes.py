@@ -13,6 +13,7 @@ from app.config import settings
 from app.db.models import AuditEvent, Claim, Evaluation, Evidence, ExtractedFact, Policy, ReviewerDecision, UploadRequest, utcnow
 from app.db.session import get_db
 from app.documents.storage import path_for
+from app.policies.catalog import policy_names
 from app.enums import ActorType, ClaimStatus, ClaimType, EvidenceType, FactSource, ProductType, Uploader
 from app.errors import AppError
 from app.uploads.tokens import resolve
@@ -60,17 +61,17 @@ def list_claims(status: ClaimStatus | None = None, product_type: ProductType | N
         stmt = stmt.where(or_(Claim.claim_number.ilike(like), Claim.product_model.ilike(like), Claim.product_brand.ilike(like)))
     total = len(db.scalars(stmt).all())
     rows = db.scalars(stmt.order_by(Claim.submitted_at.desc(), Claim.claim_number).limit(limit).offset(offset)).all()
-    items = []
+    names, items = policy_names(db), []
     for c in rows:
         ev = service.latest_evaluation(db, c.id)
-        items.append(ser.claim_summary(c, ev.recommendation if ev else None))
+        items.append(ser.claim_summary(c, ev.recommendation if ev else None, names.get((c.policy_id, c.policy_version))))
     return {"items": items, "total": total, "limit": limit, "offset": offset}
 
 
 @router.post("/claims", status_code=201)
 def create_claim(body: ClaimCreate, db: Session = Depends(get_db)):
     c = service.create_claim(db, body.model_dump())
-    return ser.claim_out(c)
+    return ser.claim_out(c, policy_names(db).get((c.policy_id, c.policy_version)))
 
 
 @router.get("/claims/{claim_id}")
@@ -86,7 +87,7 @@ def claim_detail(claim_id: str, db: Session = Depends(get_db)):
     audit = db.scalars(select(AuditEvent).where(AuditEvent.claim_id == c.id).order_by(AuditEvent.created_at)).all()
     reqs = db.scalars(select(UploadRequest).where(UploadRequest.claim_id == c.id).order_by(UploadRequest.created_at)).all()
     return {
-        "claim": ser.claim_out(c), "latest_evaluation": ser.evaluation_out(ev) if ev else None,
+        "claim": ser.claim_out(c, policy_names(db).get((c.policy_id, c.policy_version))), "latest_evaluation": ser.evaluation_out(ev) if ev else None,
         "evidence": [ser.evidence_out(e, by_ev.get(e.id, [])) for e in evidence],
         "claim_record_facts": [ser.fact_out(f) for f in by_ev.get(None, [])],
         "decisions": [ser.decision_out(x) for x in decisions], "timeline": [ser.audit_out(a) for a in audit],

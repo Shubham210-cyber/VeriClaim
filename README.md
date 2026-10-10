@@ -1,11 +1,11 @@
-# VeriClaim (ClaimProof)
+﻿# VeriClaim (ClaimProof)
 
 Evidence-based **reviewer decision support** for laptop and mobile-phone warranty/insurance claims.
 Deterministic rules decide eligibility checks; AI (optional) only summarizes. Nothing here is a real
 insurance decision: **all data and policies are synthetic, and all demo documents are stamped
 "FAKE - SYNTHETIC DEMO DOCUMENT".**
 
-Docs: [`docs/DECISIONS.md`](docs/DECISIONS.md) (authoritative decisions) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) ·
+Docs: [`docs/DECISIONS.md`](docs/DECISIONS.md) (authoritative decisions) Â· [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) Â·
 [`docs/PROGRESS.md`](docs/PROGRESS.md) (handoff log).
 
 ## Run it (Windows)
@@ -26,7 +26,7 @@ npm install
 npm run dev          # http://localhost:5173
 ```
 
-Open http://localhost:5173 and click **Load demo data** (creates 4 synthetic claims by running the real
+Open http://localhost:5173 and click **Add sample claims** (creates 4 synthetic claims by running the real
 upload/OCR/rules pipeline). No API key is needed; `AI_PROVIDER=mock` is the default.
 
 | Demo claim | Scenario | Expected recommendation |
@@ -36,7 +36,7 @@ upload/OCR/rules pipeline). No API key is needed; `AI_PROVIDER=mock` is the defa
 | CP-DEMO-003 | Accidental damage under warranty (explicit exclusion) | RECOMMENDED_REJECTION |
 | CP-DEMO-004 | Repair receipt predates reported incident | HUMAN_REVIEW_REQUIRED |
 
-Try the customer flow: open CP-DEMO-002 -> Reviewer decision -> *Request information* -> copy the link,
+Try the customer flow: open CP-DEMO-002 -> Your decision -> *Ask customer for more information* -> copy the link,
 open it in a private window, upload one of the images in `demo_fixtures/`, then reload the claim.
 
 ## Tests
@@ -61,9 +61,10 @@ cd frontend; npm run build                          # type-check + production bu
 
 - No reviewer authentication: local demo only, backend binds to 127.0.0.1.
 - OCR only for PNG/JPEG; scanned PDFs (no text layer) are reported as unreadable, not rejected.
-- Extraction uses labelled lines (`Purchase Date: ...`); free-form documents are not understood.
+- Extraction handles labelled fields, marketplace-style invoices (dates, line-item table, amount in words) and claim-hinted verification; truly free-form documents are not understood.
 - The Sonnet adapter is implemented but was not exercised against the live API in development.
 - The event type is classified by the reviewer, not inferred from text.
 - No frontend unit tests; the UI was type-checked and built but not browser-tested in an automated way.
 - Not a fraud detector: discrepancies are reported neutrally as "needs clarification".
 - SQLAlchemy is pinned to 2.0.x (a Windows Application Control policy blocked the 2.1 compiled module).
+

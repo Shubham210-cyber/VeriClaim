@@ -1,6 +1,6 @@
 export interface ClaimSummary {
   id: string; claim_number: string; product_type: string; product_brand: string | null; product_model: string | null
-  claim_type: string; policy_id: string; status: string; event_type: string | null; submitted_at: string
+  claim_type: string; policy_id: string; policy_name: string | null; status: string; event_type: string | null; submitted_at: string
   latest_recommendation: string | null; claimed_amount: string | null; currency: string
 }
 export interface Claim extends ClaimSummary {
