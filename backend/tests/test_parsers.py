@@ -115,3 +115,56 @@ def test_complex_marketplace_invoice_end_to_end(client):
     by_rule = {f["rule_id"].split("_")[0]: f for f in ev["findings"]}
     assert by_rule["CON-001"]["result"] != "FAIL"            # a possible OCR misread never becomes a conflict
     assert ev["recommendation"] != "RECOMMENDED_REJECTION"
+
+
+# ----------------------------------------------------------------- shop-style invoices (Indian formats)
+def test_indian_digit_grouping_and_spelled_total():
+    assert parse_amount("Total Amount After Tax Rs. 2,14,760.00") == ("214760.00", "INR")
+    assert words_to_number("TWO LAKH FOURTEEN THOUSAND SEVEN HUNDRED AND SIXTY RUPEES ONLY") == Decimal(214760)
+
+
+SHOP = """Shree Mobile Point
+TAX INVOICE
+Invoice No. 47 Invoice Date 28-Feb-2024
+Name of Product / Service HSN Qty Rate Taxable Value
+1 iPhone 15 Pro Max 8517 1 NOS 1,80,000.00
+IMEI 234534565432567
+Total 2 1,82,000.00 32,760.00 2,14,760.00
+TWO LAKH FOURTEEN THOUSAND SEVEN HUNDRED AND SIXTY RUPEES ONLY
+Total Amount After Tax Rs. 2,14,760.00
+"""
+
+
+def test_model_found_even_when_invoice_omits_the_brand():
+    f = parse(SHOP, hints=Hints(model="Apple iPhone 15 Pro Max", model_only="iPhone 15 Pro Max"))
+    c = f[F.PRODUCT_MODEL].confidence
+    assert f[F.PRODUCT_MODEL].raw_value == "iPhone 15 Pro Max" and (c is None or c >= 0.8)
+
+
+def test_table_header_called_name_of_product_is_understood():
+    f = parse(SHOP)   # no hints: falls back to the line-item table, capped below the threshold
+    assert f[F.PRODUCT_MODEL].raw_value.startswith("iPhone 15 Pro Max") and f[F.PRODUCT_MODEL].confidence < settings.confidence_threshold
+
+
+def test_spelled_total_without_a_label_confirms_the_numeric_total():
+    f = parse(SHOP)
+    c = f[F.PURCHASE_AMOUNT].confidence
+    assert f[F.PURCHASE_AMOUNT].normalized_value == "214760.00" and (c is None or c >= 0.8)
+
+
+def test_bare_date_label_counts_on_an_invoice_but_not_on_a_claim_form():
+    text = "Invoice No : 122026/1266 Date : 06/04/2026\nBluetooth Headset 2400"
+    inv = parse(text, E.PURCHASE_INVOICE)
+    assert inv[F.PURCHASE_DATE].raw_value == "06/04/2026" and inv[F.PURCHASE_DATE].normalized_value is None   # ambiguous
+    assert F.PURCHASE_DATE not in parse(text, E.CLAIM_FORM)
+
+
+def test_sub_total_line_is_not_taken_as_the_total():
+    text = "Sub Total : 2400.00\nCGST 3.00\nTotal : 2406.00\nRupees Two Thousand Four Hundred And Six Only\n"
+    f = parse(text)
+    assert f[F.PURCHASE_AMOUNT].normalized_value == "2406.00"
+
+
+def test_a_digit_dropped_by_ocr_is_flagged_not_trusted():
+    f = parse("Total : 406.00\nRupees Two Thousand Four Hundred And Six Only\n")   # words say 2406
+    assert f[F.PURCHASE_AMOUNT].confidence <= 0.5

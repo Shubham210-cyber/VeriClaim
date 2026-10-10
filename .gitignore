@@ -11,3 +11,6 @@ storage/*
 .pytest_cache/
 .claude/
 claimproof.db
+
+# personal / real-world sample documents: keep local, never commit
+new_demo/

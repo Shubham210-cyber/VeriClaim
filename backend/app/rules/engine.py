@@ -1,4 +1,6 @@
 """Pure deterministic rules. No DB, no AI: same inputs -> same outputs."""
+import calendar
+import re
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
@@ -106,6 +108,16 @@ class Ctx:
     def best_doc(self, f: FieldName, types: list[EvidenceType] | None = None) -> FactView | None:
         facts = self.doc_facts(f, types)
         return next((x for x in facts if self.reliable(x)), facts[0] if facts else None)
+
+
+def _ambiguity_note(raw: str) -> str | None:
+    """Explain an unparsed numeric date such as 06/04/2026 (6 April or 4 June) instead of guessing."""
+    m = re.fullmatch(r"\s*(\d{1,2})\s?[/.\-]\s?(\d{1,2})\s?[/.\-]\s?(\d{4})\s*", raw or "")
+    if not m or int(m[1]) > 12 or int(m[2]) > 12:
+        return None
+    a, b, y = int(m[1]), int(m[2]), m[3]
+    return (f"The purchase date '{raw.strip()}' can be read two ways ({a} {calendar.month_name[b]} {y} or "
+            f"{b} {calendar.month_name[a]} {y}), so it was not guessed. Please confirm the date.")
 
 
 def _out(rule_id, result, severity, title, expl, category=C.NONE, facts=(), **kw) -> RuleOutcome:
@@ -230,8 +242,8 @@ def pol_003(c: Ctx):
                     "No purchase date is available (purchase invoice missing).", C.MISSING, facts=[inc],
                     reason_code="PURCHASE_DATE_UNKNOWN", recommended_action="Obtain the purchase invoice.")
     if not c.reliable(pur):
-        return _out(rid, R.INDETERMINATE, S.MEDIUM, "Coverage window cannot be checked",
-                    "The purchase date could not be read reliably (low OCR confidence or ambiguous date format).", C.CLARIFY,
+        why = _ambiguity_note(pur.raw) or "The purchase date could not be read reliably (low scan quality)."
+        return _out(rid, R.INDETERMINATE, S.MEDIUM, "Coverage window cannot be checked", why, C.CLARIFY,
                     facts=[inc, pur], reason_code="PURCHASE_DATE_UNRELIABLE", recommended_action="Request a clearer invoice or confirm the date.",
                     request={"item_type": "PURCHASE_INVOICE", "description": "Upload a clearer invoice with an unambiguous purchase date."})
     days = (c.claim.incident_date - date.fromisoformat(pur.norm)).days

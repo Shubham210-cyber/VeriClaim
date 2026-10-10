@@ -29,12 +29,21 @@ npm run dev          # http://localhost:5173
 Open http://localhost:5173 and click **Add sample claims** (creates 4 synthetic claims by running the real
 upload/OCR/rules pipeline). No API key is needed; `AI_PROVIDER=mock` is the default.
 
-| Demo claim | Scenario | Expected recommendation |
-|---|---|---|
-| CP-DEMO-001 | Consistent warranty claim | RECOMMENDED_APPROVAL |
-| CP-DEMO-002 | No purchase invoice | MORE_INFORMATION_REQUIRED |
-| CP-DEMO-003 | Accidental damage under warranty (explicit exclusion) | RECOMMENDED_REJECTION |
-| CP-DEMO-004 | Repair receipt predates reported incident | HUMAN_REVIEW_REQUIRED |
+| Demo claim | Scenario | Recommendation | Queue state |
+|---|---|---|---|
+| CP-DEMO-001 | Laptop warranty, everything consistent | Approve | Awaiting review |
+| CP-DEMO-002 | Laptop insurance, no purchase invoice | More information | Awaiting review |
+| CP-DEMO-003 | Accidental damage under a warranty (explicit exclusion) | Decline | Awaiting review |
+| CP-DEMO-004 | Repair receipt predates the reported incident | Human review | Awaiting review |
+| CP-DEMO-005 | Phone insurance, clean claim with payout estimate | Approve | Approved |
+| CP-DEMO-006 | Phone warranty, IMEI digits swapped vs the invoice | Human review | Awaiting review |
+| CP-DEMO-007 | Laptop warranty, incident 587 days after purchase | Decline | Awaiting review |
+| CP-DEMO-008 | Laptop insurance, claim above the maximum payable | Human review | Escalated |
+| CP-DEMO-009 | Phone insurance, purchase date printed `06/04/2026` (never guessed) | More information | Awaiting review |
+| CP-DEMO-010 | Phone insurance, repair done but receipt missing | More information | Waiting for customer |
+
+The invoices are generated, realistic shop-style documents (GST table, IMEI line, amount in words, Indian number
+formatting), all stamped FAKE; `demo_fixtures/` is regenerated automatically when its version changes.
 
 ## How the app flows
 

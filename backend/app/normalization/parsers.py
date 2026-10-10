@@ -29,6 +29,7 @@ MODEL_LABELS = ["product model", "device model", "model name", "model no", "mode
 DESC_LABELS = ["damage description", "failure description", "description", "statement", "issue"]
 AMOUNT_LABELS = ["repair amount", "grand total", "total amount", "amount paid", "net payable", "total", "amount"]
 MONEY = re.compile(r"\d[\d,]*\.\d{2}")
+SUBTOTAL = re.compile(r"sub\s*-?\s*total|taxable|before\s+tax", re.I)
 TABLE_GUESS_MAX_CONF = 0.75  # heuristic table-derived values stay below the 0.80 reliability threshold
 
 
@@ -45,7 +46,8 @@ class ParsedFact:
 @dataclass
 class Hints:
     """Values the claimant stated; used only to locate/verify text in the document."""
-    model: str | None = None        # e.g. "Nokia 2"
+    model: str | None = None        # e.g. "Nokia 2" (brand + model)
+    model_only: str | None = None   # e.g. "iPhone 15 Pro Max": invoices often omit the brand prefix
     identifier: str | None = None
     extra: dict = field(default_factory=dict)
 
@@ -182,7 +184,7 @@ def _table_product(lines: list[Line]):
     """Product from an invoice line-item table: first row under the 'Description' header."""
     for i, (_, line, _) in enumerate(lines):
         window = line + " " + (lines[i + 1][1] if i + 1 < len(lines) else "")
-        if re.search(r"\bdescription\b", line, re.I) and re.search(r"\b(qty|quantity|price|amount|rate|tax)\b", window, re.I):
+        if re.search(r"\b(description|product)\b", line, re.I) and re.search(r"\b(qty|quantity|price|amount|rate|tax|hsn)\b", window, re.I):
             for page, nxt, conf in lines[i + 1:i + 5]:
                 s = re.sub(r"^\W*\d{1,2}\s+", "", nxt).strip()
                 s = re.split(r"\||\bHSN\b|[₹$€]|\bRs\b", s)[0]
@@ -203,7 +205,8 @@ def _locate(lines: list[Line], pattern: str, squash: bool = False):
 
 def _model_pattern(model: str) -> str:
     toks = re.findall(r"[A-Za-z]+|\d+(?:\.\d+)?", model)
-    return r"(?<![A-Za-z0-9])" + r"[\s\-]*".join(re.escape(t) for t in toks) + r"(?![A-Za-z0-9.])" if toks else r"$^"
+    # Standalone token only: never match inside a serial/IMEI/SKU such as "NS-N14-000123".
+    return (r"(?<![A-Za-z0-9\-_/])" + r"[\s\-]*".join(re.escape(t) for t in toks) + r"(?![A-Za-z0-9.\-_/])") if toks else r"$^"
 
 
 def parse_document(result: ExtractionResult, evidence_type: EvidenceType, hints: Hints | None = None) -> list[ParsedFact]:
@@ -216,6 +219,9 @@ def parse_document(result: ExtractionResult, evidence_type: EvidenceType, hints:
 
     for field_name, labels in DATE_LABELS.items():
         hit = _find_by_shape(lines, labels, DATE_VALUE)
+        if not hit and field_name == FieldName.PURCHASE_DATE and evidence_type == EvidenceType.PURCHASE_INVOICE:
+            # Many shop invoices just say "Date : 06/04/2026". Only trusted on an invoice, never on a claim form.
+            hit = _find_by_shape(lines, ["date"], DATE_VALUE)
         if hit:
             raw, snip, page, conf = hit
             add(field_name, raw, parse_date(raw), snip, page, conf)
@@ -237,7 +243,14 @@ def parse_document(result: ExtractionResult, evidence_type: EvidenceType, hints:
     # last resort is the line-item table, whose OCR is noisy, so it is capped below the confidence threshold
     # (it will ask for verification rather than accuse on a possible misread such as "A5" -> "Ad").
     hit = _find_rest_of_line(lines, MODEL_LABELS)
-    loc = _locate(lines, _model_pattern(hints.model)) if (not hit and hints and hints.model) else None
+    loc = None
+    if not hit and hints:
+        for cand in (hints.model, hints.model_only):
+            # a bare model like "2" is too weak to search for; require letters and some length
+            if cand and len(cand) >= 3 and re.search(r"[A-Za-z]", cand):
+                loc = _locate(lines, _model_pattern(cand))
+                if loc:
+                    break
     if hit or loc:
         raw, snip, page, conf = hit or loc
         add(FieldName.PRODUCT_MODEL, raw, normalize_model(raw), snip, page, conf)
@@ -259,12 +272,16 @@ def parse_document(result: ExtractionResult, evidence_type: EvidenceType, hints:
         labelled = None
         for label in AMOUNT_LABELS:
             rx = re.compile(_label_rx(label) + r"\b", re.I)
-            labelled = next(((p, ln, c) for p, ln, c in lines if rx.search(ln) and MONEY.search(ln)), None)
+            # "Sub Total" / "Taxable amount" lines are not the payable total even though they contain "total"
+            labelled = next(((p, ln, c) for p, ln, c in lines
+                             if rx.search(ln) and MONEY.search(ln) and not SUBTOTAL.search(ln)), None)
             if labelled:
                 break
         if labelled:
             page, ln, conf = labelled
             amt, cur = parse_amount(ln, doc_text)
+            m0 = re.search(_label_rx(label) + r"\b", ln, re.I)
+            ln = ln[m0.start():] if m0 else ln  # drop unrelated text merged from a neighbouring column
             if words:
                 # Cross-check numeric total against the spelled-out total: agreement raises trust (OCR garbles
                 # currency symbols, so numeric lines score low); disagreement forces verification.
@@ -286,16 +303,23 @@ def parse_document(result: ExtractionResult, evidence_type: EvidenceType, hints:
 
 
 def _amount_in_words(lines: list[Line]):
+    """Spelled-out total: after an 'amount/total in words' label, or a standalone line ending in 'only'."""
     for i, (page, ln, conf) in enumerate(lines):
-        m = re.search(r"amount\s+in\s+words\W*(.*)$", ln, re.I)
-        if not m:
-            continue
-        if m.group(1).strip():
-            cand, cpage, cconf = m.group(1).strip(), page, conf
-        elif i + 1 < len(lines):
-            cpage, cand, cconf = lines[i + 1]
-        else:
-            return None
-        value = words_to_number(cand) if cand else None
-        return (value, cand, cpage, cconf) if value is not None else None
+        m = re.search(r"(?:total\s+|amount\s+)?in\s+words\W*(.*)$", ln, re.I)
+        if m:
+            if m.group(1).strip():
+                cand, cpage, cconf = m.group(1).strip(), page, conf
+            elif i + 1 < len(lines):
+                cpage, cand, cconf = lines[i + 1]
+            else:
+                continue
+            value = words_to_number(cand) if cand else None
+            if value is not None and value > 0:
+                return value, cand, cpage, cconf
+    for page, ln, conf in lines:
+        m = re.match(r"^\W*(?:rupees\s+|amount\s*:\s*)?([A-Za-z ,\-]+?)\s+only\.?\W*$", ln.strip(), re.I)
+        if m:
+            value = words_to_number(m.group(1))
+            if value is not None and value > 0:
+                return value, ln.strip(), page, conf
     return None

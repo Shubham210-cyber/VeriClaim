@@ -267,13 +267,29 @@ tesseract_missing = not Path(settings.tesseract_cmd).exists()
 
 @pytest.mark.skipif(tesseract_missing, reason="Tesseract not installed")
 def test_demo_scenarios_with_real_ocr(client, db):
-    from app.demo.seed import seed_demo
-    assert len(seed_demo(db)) == 4 and seed_demo(db) == []   # idempotent
-    expected = {"CP-DEMO-001": "RECOMMENDED_APPROVAL", "CP-DEMO-002": "MORE_INFORMATION_REQUIRED",
-                "CP-DEMO-003": "RECOMMENDED_REJECTION", "CP-DEMO-004": "HUMAN_REVIEW_REQUIRED"}
-    items = client.get(f"{H}/claims").json()["items"]
-    assert {i["claim_number"]: i["latest_recommendation"] for i in items} == expected
-    d4 = next(i for i in items if i["claim_number"] == "CP-DEMO-004")
-    detail = client.get(f"{H}/claims/{d4['id']}").json()
-    f = next(x for x in detail["latest_evaluation"]["findings"] if x["rule_id"].startswith("CON-005"))
-    assert f["evidence_ids"] and f["source_fact_ids"] and "fraud" in f["explanation"].lower()
+    from app.demo.seed import DEMO, seed_demo
+    assert len(seed_demo(db)) == len(DEMO) == 10 and seed_demo(db) == []   # idempotent
+    items = {i["claim_number"]: i for i in client.get(f"{H}/claims?limit=100").json()["items"]}
+    # every claim lands on its intended recommendation, through real OCR of the generated invoices
+    assert {n: i["latest_recommendation"] for n, i in items.items()} == {s["number"]: s["expect"].value for s in DEMO}
+    # and the queue shows a realistic spread of states
+    assert {n: i["status"] for n, i in items.items() if i["status"] != "AWAITING_REVIEW"} == {
+        "CP-DEMO-005": "APPROVED", "CP-DEMO-008": "ESCALATED", "CP-DEMO-010": "AWAITING_CUSTOMER"}
+    assert all(i["policy_name"] for i in items.values())
+
+    def finding(number, prefix):
+        d = client.get(f"{H}/claims/{items[number]['id']}").json()
+        return next(f for f in d["latest_evaluation"]["findings"] if f["rule_id"].startswith(prefix))
+
+    # the reasons are the intended ones, not OCR accidents
+    f4 = finding("CP-DEMO-004", "CON-005")
+    assert f4["result"] == "FAIL" and f4["evidence_ids"] and f4["source_fact_ids"] and "fraud" in f4["explanation"].lower()
+    assert finding("CP-DEMO-006", "CON-002")["result"] == "FAIL"                       # IMEI digits swapped
+    assert finding("CP-DEMO-007", "POL-003")["result"] == "FAIL"                       # outside the 12 months
+    assert finding("CP-DEMO-008", "POL-007")["result"] == "FAIL"                       # above the cap
+    assert "can be read two ways" in finding("CP-DEMO-009", "POL-003")["explanation"]  # 06/04/2026 never guessed
+    assert finding("CP-DEMO-010", "EV-003")["result"] == "FAIL"                        # repair receipt missing
+    # clean claims stay clean: no open findings that matter
+    for n in ("CP-DEMO-001", "CP-DEMO-005"):
+        d = client.get(f"{H}/claims/{items[n]['id']}").json()
+        assert not [f for f in d["latest_evaluation"]["findings"] if f["result"] in ("FAIL", "INDETERMINATE") and f["category"] != "NOTE"], n

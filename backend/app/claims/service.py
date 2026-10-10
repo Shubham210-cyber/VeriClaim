@@ -103,7 +103,7 @@ def ingest_evidence(db: Session, claim: Claim, filename: str, mime: str | None, 
     else:
         ev.extracted_text = res.text[:extractor.MAX_TEXT]
         model = " ".join(x for x in (claim.product_brand, claim.product_model) if x) or None
-        parsed = parse_document(res, evidence_type, Hints(model=model, identifier=claim.device_identifier))
+        parsed = parse_document(res, evidence_type, Hints(model=model, model_only=claim.product_model, identifier=claim.device_identifier))
         doc_conf = res.confidence if res.confidence is not None else 0.5
         for p in parsed:
             db.add(ExtractedFact(claim_id=claim.id, evidence_id=ev.id, source=FactSource.DOCUMENT.value,

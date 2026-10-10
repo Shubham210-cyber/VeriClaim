@@ -39,3 +39,6 @@ Code layout: `backend/` (FastAPI), `frontend/` (Vite React TS), `docs/`,
 
 - Decision Pack built (frontend only; backend unchanged): letter generator + printable case file; verified in browser.
 
+
+- Demo data v2: 10 seeded claims + realistic generated invoices; parser hardened using the 4 sample documents in new_demo/ (git-ignored). 60 backend tests pass; browser suites pass.
+
