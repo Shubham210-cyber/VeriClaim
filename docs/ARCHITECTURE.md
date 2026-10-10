@@ -168,3 +168,17 @@ ambiguity should normally request information or human review.
 -   Use UTC timestamps.
 -   Add a health endpoint that does not reveal secrets.
 -   Keep CORS restricted to the configured local frontend origin.
+
+## 8. Implementation status (kept current -- see PROGRESS.md and DECISIONS.md)
+
+Built as specified, with these concrete choices:
+- Backend `backend/app/`: `api/` (routes, schemas, serializers), `claims/service.py` (create, ingest, evaluate,
+  decisions), `documents/` (storage validation, extract: TXT/pypdf/Tesseract), `normalization/parsers.py`
+  (label-based parsers), `rules/engine.py` (22 pure rules) + `rules/aggregator.py` (precedence), `ai/provider.py`
+  (mock + Sonnet, schema-validated, summary only), `uploads/tokens.py`, `audit/`, `demo/` (fixtures + seed), `db/`.
+- Frontend `frontend/src/`: pages `ClaimsQueue`, `NewClaim`, `ClaimDetailPage` (evidence, findings, decision,
+  timeline, upload links), `CustomerUpload` (token page, uses only `/public/*` with `X-Upload-Token`).
+- Evidence flow: validate -> store under UUID key -> Evidence row -> extract -> facts (with snippet/page/confidence)
+  -> evaluate -> Findings + Evaluation (append-only) -> audit event.
+- Public endpoints use header `X-Upload-Token` (not the URL path) so access logs never contain tokens.
+- Demo seed: `POST /api/v1/demo/seed` or `python -m app.demo.seed`.

@@ -17,8 +17,8 @@ Code layout: `backend/` (FastAPI), `frontend/` (Vite React TS), `docs/`,
 - [x] Phase 3 rules + evaluation (22 rules)
 - [x] Phase 4 AI provider (mock+sonnet, untested live)
 - [x] Phase 5 BACKEND decisions + customer upload (UI pending)
-- [ ] Phase 6 polish
-- [ ] Phase 7 hardening + README
+- [x] Phase 6 UI (queue, new claim, detail, customer page) built; type-check+build OK; NOT browser-tested
+- [x] Phase 7 README + docs updated
 
 ## Log
 - Repo linked to GitHub; docs moved to `docs/`.
@@ -26,5 +26,6 @@ Code layout: `backend/` (FastAPI), `frontend/` (Vite React TS), `docs/`,
 - Backend complete: `backend/app/*`, 40 pytest pass (`cd backend; .\.venv\Scripts\python -m pytest -q`). Run API: `.\.venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000`. Seed: `python -m app.demo.seed` or `POST /api/v1/demo/seed`.
 - NOTE: SQLAlchemy pinned to 2.0.x: Windows Application Control blocks the 2.1 compiled module (2.0 falls back to pure Python). Do not upgrade.
 - Demo OCR verified: CP-DEMO-001..004 -> APPROVAL / MORE_INFO / REJECTION / HUMAN_REVIEW with real Tesseract.
-- NEXT: frontend (queue, detail, evidence, findings, decision panel, customer upload page, seed button), README, then final verification.
+- NEXT: optional - browser smoke test of UI, Sonnet live test with a key, fix GitHub push access.
 - GitHub push blocked: saved git credential (NiranjanSathishkumar) has no write access to Shubham210-cyber/VeriClaim (HTTP 403). Commits are local until access is fixed.
+
