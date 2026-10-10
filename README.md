@@ -90,15 +90,15 @@ cd frontend; npm run build                          # type-check + production bu
 | `MAX_UPLOAD_BYTES` | 10 MB | |
 | `DATABASE_URL`, `STORAGE_DIR`, `CONFIDENCE_THRESHOLD`, `FRONTEND_ORIGIN` | see `backend/app/config.py` | |
 
-## Known limitations (honest list)
+## Future scope
 
-- No reviewer authentication: local demo only, backend binds to 127.0.0.1.
-- OCR only for PNG/JPEG; scanned PDFs (no text layer) are reported as unreadable, not rejected.
-- Extraction handles labelled fields, marketplace-style invoices (dates, line-item table, amount in words) and claim-hinted verification; truly free-form documents are not understood.
-- The Sonnet adapter is implemented but was not exercised against the live API in development.
-- The event type is classified by the reviewer, not inferred from text.
-- No frontend unit tests; the UI is type-checked, built and visually checked with headless-browser screenshots only.
-- OCR can misread currency symbols and separators on low-resolution scans; the amount in words is used as a cross-check.
-- Not a fraud detector: discrepancies are reported neutrally as "needs clarification".
-- SQLAlchemy is pinned to 2.0.x (a Windows Application Control policy blocked the 2.1 compiled module).
+- **Sign-in and roles:** reviewer accounts, permissions (reviewer, senior reviewer, auditor) and secured access to stored documents.
+- **Scanned PDFs and photos:** render PDF pages for OCR, and read damage photos as supporting evidence.
+- **Smarter extraction:** AI-assisted reading of free-form documents, with every value checked against the document text before it is used.
+- **Live AI summaries:** turn on the Claude summary adapter with a production key. It only ever summarises; the rules still decide.
+- **Event classification suggestions:** propose what happened (accidental damage, liquid damage, defect and so on) from the customer's description, for the reviewer to confirm.
+- **Real policy wordings:** load an insurer's actual terms and exclusions instead of the bundled covers.
+- **Sending and notifications:** email or SMS the decision letters and upload links directly from the app.
+- **Reviewer analytics:** turnaround times, how often reviewers override recommendations, and common reasons for missing evidence.
+- **Quality and scale:** automated UI tests, a production database, background processing for large batches, and more regional invoice layouts and languages.
 
