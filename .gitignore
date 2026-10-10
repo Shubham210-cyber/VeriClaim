@@ -10,3 +10,4 @@ storage/*
 !storage/.gitkeep
 .pytest_cache/
 .claude/
+claimproof.db

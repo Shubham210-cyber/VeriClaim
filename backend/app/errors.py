@@ -1,0 +1,6 @@
+class AppError(Exception):
+    """Safe, client-facing error. Never put sensitive text in `message`."""
+
+    def __init__(self, status: int, code: str, message: str):
+        self.status, self.code, self.message = status, code, message
+        super().__init__(message)
