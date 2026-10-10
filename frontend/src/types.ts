@@ -43,5 +43,7 @@ export interface ClaimDetail {
 }
 export interface Policy {
   id: string; name: string; product_type: string; claim_type: string; covered_event_types: string[]
-  excluded_event_types: string[]; note: string
+  excluded_event_types: string[]; note: string; required_evidence_types: string[]
+  requires_repair_receipt_if_repaired: boolean; requires_incident_description: boolean
+  coverage_days_from_purchase: number | null; max_claim_amount: string | null; deductible_amount: string | null
 }

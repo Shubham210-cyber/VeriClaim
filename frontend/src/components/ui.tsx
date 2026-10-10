@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { label } from '../api'
 
 const TONE: Record<string, string> = {
@@ -23,9 +23,9 @@ export const ErrorBox = ({ message, retry }: { message: string; retry?: () => vo
 
 export const Empty = ({ children }: { children: ReactNode }) => <div className="state">{children}</div>
 
-export const Panel = ({ title, children, right, hint }: { title: string; children: ReactNode; right?: ReactNode; hint?: string }) => (
-  <section className="panel">
-    <header><div><h2>{title}</h2>{hint && <p className="muted small hint">{hint}</p>}</div>{right}</header>
+export const Card = ({ title, hint, right, children }: { title?: string; hint?: string; right?: ReactNode; children: ReactNode }) => (
+  <section className="card">
+    {(title || right) && <header><div>{title && <h2>{title}</h2>}{hint && <p className="muted small hint">{hint}</p>}</div>{right}</header>}
     {children}
   </section>
 )
@@ -33,3 +33,47 @@ export const Panel = ({ title, children, right, hint }: { title: string; childre
 export const Field = ({ k, children }: { k: string; children: ReactNode }) => (
   <div className="kv"><dt>{k}</dt><dd>{children}</dd></div>
 )
+
+/** Horizontal progress indicator. `current` is the index of the step the user should work on. */
+export function Stepper({ steps, current }: { steps: string[]; current: number }) {
+  return (
+    <ol className="stepper" aria-label="Progress">
+      {steps.map((s, i) => (
+        <li key={s} className={i < current ? 'done' : i === current ? 'current' : ''} aria-current={i === current ? 'step' : undefined}>
+          <span className="dot">{i < current ? '✓' : i + 1}</span><span className="step-label">{s}</span>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+export function Tabs({ tabs, active, onChange }: { tabs: { id: string; label: string; count?: number }[]; active: string; onChange: (id: string) => void }) {
+  return (
+    <div className="tabs" role="tablist">
+      {tabs.map((t) => (
+        <button key={t.id} role="tab" aria-selected={active === t.id} className={active === t.id ? 'active' : ''} onClick={() => onChange(t.id)}>
+          {t.label}{t.count !== undefined && t.count > 0 && <span className="count">{t.count}</span>}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Accessible modal built on the native <dialog> (focus trap + Esc come for free). */
+export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  const ref = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    const d = ref.current
+    if (d && !d.open) d.showModal()
+    // No cleanup close(): unmounting removes the element, and calling close() here would fire `onClose`
+    // (React StrictMode mounts twice in dev) and immediately dismiss the dialog.
+  }, [])
+  return (
+    <dialog ref={ref} className="modal" onClose={onClose} onClick={(e) => { if (e.target === ref.current) onClose() }}>
+      <div className="modal-body">
+        <header><h2>{title}</h2><button className="icon-btn" onClick={onClose} aria-label="Close">✕</button></header>
+        {children}
+      </div>
+    </dialog>
+  )
+}

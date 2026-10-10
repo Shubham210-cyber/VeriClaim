@@ -56,8 +56,14 @@ function Item({ item, token, disabled, done, onDone }: { item: RequestedItem; to
       <p>{item.description}</p>
       {done ? <p className="ok">✓ Received. Thank you, a reviewer will take it from here.</p> : (
         <>
-          <input type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} aria-label={`File for ${label(item.item_type)}`} />{' '}
-          <button className="btn primary" disabled={!file || busy || disabled} onClick={send}>{busy ? 'Uploading…' : 'Upload'}</button>
+          <div className="row">
+            <label className="btn file-btn" style={{ margin: 0 }}>{file ? 'Choose a different file' : 'Choose file'}
+              <input type="file" accept=".pdf,.png,.jpg,.jpeg,.txt" hidden onChange={(e) => setFile(e.target.files?.[0] ?? null)} aria-label={`File for ${label(item.item_type)}`} /></label>
+            {file && <span className="file-name small">{file.name}</span>}
+          </div>
+          <div className="actions" style={{ marginTop: 14 }}>
+            <button className="btn primary lg" disabled={!file || busy || disabled} onClick={send}>{busy ? 'Uploading…' : 'Send document'}</button>
+          </div>
           {err && <ErrorBox message={err} />}
         </>
       )}

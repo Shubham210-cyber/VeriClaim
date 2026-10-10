@@ -182,3 +182,8 @@ Built as specified, with these concrete choices:
   -> evaluate -> Findings + Evaluation (append-only) -> audit event.
 - Public endpoints use header `X-Upload-Token` (not the URL path) so access logs never contain tokens.
 - Demo seed: `POST /api/v1/demo/seed` or `python -m app.demo.seed`.
+
+### Frontend structure (UX v2)
+`src/pages/` ClaimsQueue, NewClaim (wizard), ClaimDetailPage (container), CustomerUpload; `src/claim/` ResultCard,
+DecisionDialog, FindingsTab, DocumentsTab, OtherTabs (details + history); `src/components/ui.tsx` shared primitives
+(Badge, Card, Stepper, Tabs, Modal); `src/constants.ts` event options + document slots; `src/api.ts` client + wording.

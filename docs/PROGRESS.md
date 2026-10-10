@@ -33,3 +33,6 @@ Code layout: `backend/` (FastAPI), `frontend/` (Vite React TS), `docs/`,
 - OCR v2 + product polish done (see DECISIONS.md). 53 backend tests pass; frontend builds; verified with real Amazon invoice (date 2018-03-30, Nokia 2, INR 6180) and headless-browser screenshots.
 - UI labels: 'Add sample claims' (was Load demo data), 'Review claim', 'Your decision'.
 
+
+- UX flow v2 done (frontend only): wizard, auto-review, result card + decision dialog, tabs, queue groups, responsive. Verified in a real browser run. Backend unchanged.
+

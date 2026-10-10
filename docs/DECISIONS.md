@@ -151,3 +151,15 @@ Demo CP-DEMO-004 is fixed at **HUMAN_REVIEW_REQUIRED**.
 - UI brand is **VeriClaim**. Users never see policy IDs, rule IDs or enum names. Policies show friendly names
   (e.g. "Laptop Manufacturer Warranty (12 months)"); rule IDs are behind a "Technical details" toggle.
 - API still uses stable IDs; `policy_name` is added to claim responses.
+
+## UX flow v2 (frontend only; backend unchanged)
+- Guided "New claim" wizard (cover -> device/incident -> documents). Required documents are derived in the frontend
+  from the policy (`required_evidence_types`, `requires_repair_receipt_if_repaired`) via `documentSlots()`.
+- The review runs automatically: after wizard submit, after each upload on the claim page, and on page load if
+  documents are newer than the last evaluation. There is no manual "run evaluation" step.
+- Claim page: progress stepper, recommendation card with decision buttons (recommended one highlighted), tabs for
+  Findings / Documents / Claim details / History. Decisions open a dialog; "Ask customer for info" creates the
+  one-time upload link inside the dialog.
+- Queue: status groups (Needs your review / Waiting for customer / Completed) instead of raw statuses; rows are cards on phones.
+- Verified with a scripted real-browser run (Edge via playwright-core, kept outside the repo): wizard, auto-review,
+  approve, add-document-later, ask-customer + customer upload, queue, phone viewport; no JS errors.

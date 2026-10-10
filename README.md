@@ -36,8 +36,20 @@ upload/OCR/rules pipeline). No API key is needed; `AI_PROVIDER=mock` is the defa
 | CP-DEMO-003 | Accidental damage under warranty (explicit exclusion) | RECOMMENDED_REJECTION |
 | CP-DEMO-004 | Repair receipt predates reported incident | HUMAN_REVIEW_REQUIRED |
 
-Try the customer flow: open CP-DEMO-002 -> Your decision -> *Ask customer for more information* -> copy the link,
-open it in a private window, upload one of the images in `demo_fixtures/`, then reload the claim.
+## How the app flows
+
+1. **New claim** is a 3-step wizard: choose the cover, enter device and incident details, add the documents.
+   Required documents are flagged. On "Create claim" the documents are read and the claim is reviewed automatically.
+2. The **claim page** shows a progress bar (Add documents, Review, Your decision) and a recommendation card with the
+   decision buttons right there: *Approve*, *Decline*, *Ask customer for info* (and *More*: escalate / mark under review).
+   The recommended action is highlighted. Reasons are required for declines and for decisions that differ from the
+   recommendation.
+3. Tabs below hold the detail: **What we found** (issues first, each linked to its source document), **Documents**
+   (upload slots per document, with what was read), **Claim details**, **History** (audit trail and upload links).
+4. Uploading a new document on the claim page re-runs the review automatically.
+
+Try the customer flow: open CP-DEMO-002 -> *Ask customer for info* -> *Create link* -> copy the link,
+open it in a private window, send one of the images in `demo_fixtures/`, then reload the claim.
 
 ## Tests
 
