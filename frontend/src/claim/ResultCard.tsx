@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { HEADLINES, fmtDate, label } from '../api'
 import type { ClaimDetail } from '../types'
 import { RECOMMENDED_ACTION } from './DecisionDialog'
@@ -33,7 +34,10 @@ export default function ResultCard({ d, reviewing, onDecide, onReview }: { d: Cl
           <div className="eyebrow">{done ? 'Decision recorded' : 'Our recommendation'}</div>
           <div className="result-title">{head?.title ?? label(ev.recommendation)}</div>
         </div>
-        {ev.recommendation === 'PROCESSING_FAILED' && <button className="btn" onClick={onReview}>Try again</button>}
+        <div className="row">
+          {ev.recommendation === 'PROCESSING_FAILED' && <button className="btn" onClick={onReview}>Try again</button>}
+          {ev.recommendation !== 'PROCESSING_FAILED' && <Link className="btn" to={`/claims/${d.claim.id}/pack`}>📄 Decision pack</Link>}
+        </div>
       </div>
       <p className="why">{ev.summary}</p>
       {ev.missing_evidence.length > 0 && !done && (

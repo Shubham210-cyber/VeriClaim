@@ -2,6 +2,7 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import ClaimDetailPage from './pages/ClaimDetailPage'
 import ClaimsQueue from './pages/ClaimsQueue'
 import CustomerUpload from './pages/CustomerUpload'
+import DecisionPackPage from './pages/DecisionPackPage'
 import NewClaim from './pages/NewClaim'
 
 const Logo = () => (
@@ -13,7 +14,7 @@ const Logo = () => (
 )
 
 const Footer = () => (
-  <footer className="footer">
+  <footer className="footer no-print">
     Demo environment: all claims, people, devices and policies are synthetic. Recommendations are decision support for a human
     reviewer and are not real insurance decisions.
   </footer>
@@ -26,7 +27,7 @@ export default function App() {
         <Route path="/customer-upload/:token" element={<><main className="container"><CustomerUpload /></main><Footer /></>} />
         <Route path="*" element={
           <>
-            <nav className="nav">
+            <nav className="nav no-print">
               <Link to="/" className="brand"><Logo />VeriClaim</Link>
               <span className="tagline">Evidence-based claim review</span>
               <span className="pill" title="All data in this environment is synthetic">Demo data</span>
@@ -36,6 +37,7 @@ export default function App() {
                 <Route path="/" element={<ClaimsQueue />} />
                 <Route path="/claims/new" element={<NewClaim />} />
                 <Route path="/claims/:id" element={<ClaimDetailPage />} />
+                <Route path="/claims/:id/pack" element={<DecisionPackPage />} />
                 <Route path="*" element={<p>Page not found. <Link to="/">Back to claims</Link></p>} />
               </Routes>
             </main>

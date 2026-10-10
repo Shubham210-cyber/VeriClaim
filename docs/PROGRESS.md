@@ -36,3 +36,6 @@ Code layout: `backend/` (FastAPI), `frontend/` (Vite React TS), `docs/`,
 
 - UX flow v2 done (frontend only): wizard, auto-review, result card + decision dialog, tabs, queue groups, responsive. Verified in a real browser run. Backend unchanged.
 
+
+- Decision Pack built (frontend only; backend unchanged): letter generator + printable case file; verified in browser.
+

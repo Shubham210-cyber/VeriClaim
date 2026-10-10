@@ -47,6 +47,11 @@ upload/OCR/rules pipeline). No API key is needed; `AI_PROVIDER=mock` is the defa
 3. Tabs below hold the detail: **What we found** (issues first, each linked to its source document), **Documents**
    (upload slots per document, with what was read), **Claim details**, **History** (audit trail and upload links).
 4. Uploading a new document on the claim page re-runs the review automatically.
+5. **Decision pack** (button on the recommendation card): an editable draft customer letter that follows the outcome
+   (approval with an illustrative payout estimate, decline citing the exclusion and document, information request, or a
+   neutral clarification), plus a printable one-page case file with findings, evidence, decision and history. Letters
+   never contain internal codes or the word "fraud", and the reviewer's internal note stays in the case file only.
+   Nothing is sent automatically; use Copy or Print / Save as PDF.
 
 Try the customer flow: open CP-DEMO-002 -> *Ask customer for info* -> *Create link* -> copy the link,
 open it in a private window, send one of the images in `demo_fixtures/`, then reload the claim.

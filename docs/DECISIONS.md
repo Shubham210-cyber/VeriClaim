@@ -163,3 +163,13 @@ Demo CP-DEMO-004 is fixed at **HUMAN_REVIEW_REQUIRED**.
 - Queue: status groups (Needs your review / Waiting for customer / Completed) instead of raw statuses; rows are cards on phones.
 - Verified with a scripted real-browser run (Edge via playwright-core, kept outside the repo): wizard, auto-review,
   approve, add-document-later, ask-customer + customer upload, queue, phone viewport; no JS errors.
+
+## Decision Pack (selling-point feature, frontend only)
+- Route `/claims/:id/pack`, button on the recommendation card. Letter follows the reviewer's decision; before any decision it
+  is a draft from the recommendation (banner says so). Outcomes: APPROVED (illustrative estimate = min(claimed, cap) - deductible),
+  DECLINED (reason from rejection-candidate findings, cites documents), INFO (requested items + `[paste the upload link here]`
+  placeholder, since the raw token is shown once), CLARIFY (neutral conflict wording).
+- Customer-facing text is sanitised by `friendly()`/`neutral()` in `claim/pack.ts`: policy IDs and enum codes become plain wording,
+  sentences containing "fraud" are dropped, "the claim details" is not cited, and the reviewer's internal reason is NOT put in the letter.
+- Case file is internal: keeps full explanations and the reviewer's reason; print CSS prints letter-only / case-file-only.
+- Tested in a real browser (21 checks incl. leak checks, print scopes, PDFs). Letters are drafts, not legal advice; nothing is emailed.
