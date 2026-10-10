@@ -7,8 +7,9 @@ from app.enums import Category, EvidenceType, FactSource, FieldName, RuleResult,
 
 RULES_VERSION = "1.0.0"
 R, S, C = RuleResult, Severity, Category
+# Only fields that some rule actually relies on: a noisy value nobody uses must not block a claim.
 MATERIAL = [FieldName.PRODUCT_MODEL, FieldName.DEVICE_IDENTIFIER, FieldName.PURCHASE_DATE,
-            FieldName.INCIDENT_DATE, FieldName.REPAIR_DATE, FieldName.PURCHASE_AMOUNT, FieldName.REPAIR_AMOUNT]
+            FieldName.INCIDENT_DATE, FieldName.REPAIR_DATE, FieldName.REPAIR_AMOUNT]
 
 
 @dataclass
@@ -320,7 +321,11 @@ def con_001(c: Ctx):
     if cf is None or df is None:
         return _na(rid, t)
     if not (c.reliable(cf) and c.reliable(df)):
-        return _out(rid, R.INDETERMINATE, S.MEDIUM, t, "Model could not be read reliably from the invoice.", C.CLARIFY, facts=[cf, df], reason_code="LOW_CONFIDENCE_MODEL")
+        return _out(rid, R.INDETERMINATE, S.MEDIUM, "Product model could not be confirmed",
+                    f"The claim says '{cf.raw}'; the closest text on the document is '{df.raw}', which could not be read "
+                    "reliably enough to compare. A clearer copy or a manual check is needed.", C.CLARIFY, facts=[cf, df],
+                    reason_code="LOW_CONFIDENCE_MODEL", recommended_action="Verify the model against the original document.",
+                    request={"item_type": "PURCHASE_INVOICE", "description": "Upload a clearer invoice that shows the product model."})
     a, b = cf.norm, df.norm
     if a == b or a in b or b in a:
         return _out(rid, R.PASS, S.INFO, t, f"Claim model '{cf.raw}' matches invoice model '{df.raw}'.", facts=[cf, df])

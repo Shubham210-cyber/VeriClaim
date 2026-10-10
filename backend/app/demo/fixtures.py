@@ -52,8 +52,40 @@ TXT = {
 }
 
 
+def make_complex_invoice(path: Path) -> None:
+    """Marketplace-style invoice: two columns, line-item table, Rs symbols, dd.mm.yyyy, amount in words."""
+    img = Image.new("RGB", (900, 700), "white")
+    dr = ImageDraw.Draw(img)
+    dr.rectangle([0, 0, 900, 50], fill=(200, 30, 30))
+    dr.text((20, 10), BANNER, fill="white", font=_font(28))
+    f, b = _font(15), _font(17)
+    dr.text((470, 70), "Tax Invoice/Bill of Supply/Cash Memo", fill="black", font=b)
+    dr.text((20, 120), "Sold By:", fill="black", font=b)
+    dr.text((20, 145), "Fake Mart Private Limited\nSample Street 1, Test City, 560001\nIN", fill="black", font=f)
+    dr.text((560, 120), "Billing Address:", fill="black", font=b)
+    dr.text((560, 145), "Test Customer\n12 Demo Lane, Test City", fill="black", font=f)
+    dr.text((20, 240), "GST Registration No: 29AAAAA0000A1Z5", fill="black", font=b)
+    dr.text((20, 300), "Order Number: 000-1234567-7654321", fill="black", font=b)
+    dr.text((20, 325), "Order Date: 30.03.2026", fill="black", font=b)
+    dr.text((470, 300), "Invoice Number: FAKE-7547", fill="black", font=b)
+    dr.text((470, 325), "Invoice Details: KA-FAKE-143189331", fill="black", font=b)
+    dr.text((470, 350), "Invoice Date: 30.03.2026", fill="black", font=b)
+    dr.rectangle([20, 400, 880, 560], outline="black")
+    dr.text((28, 408), "Sl.   Description                                   Unit Price  Qty  Net Amount  Tax Rate  Tax Amount  Total Amount", fill="black", font=_font(12))
+    dr.text((28, 440), "1     Aurora A5 (Midnight/Black) | B0FAKE1234 ( Aurora A5 (Midnight/Black) )", fill="black", font=f)
+    dr.text((60, 462), "HSN:8517", fill="black", font=f)
+    dr.text((560, 462), "₹21,428.57   1   ₹21,428.57   12%   ₹2,571.43   ₹24,000.00", fill="black", font=_font(13))
+    dr.text((28, 530), "TOTAL:                                                     ₹2,571.43    ₹24,000.00", fill="black", font=b)
+    dr.text((20, 580), "Amount in Words:", fill="black", font=b)
+    dr.text((20, 605), "Twenty Four Thousand only", fill="black", font=b)
+    dr.text((560, 650), "Authorized Signatory", fill="black", font=f)
+    img.save(path)
+
+
 def ensure_fixtures() -> Path:
     FIXTURE_DIR.mkdir(exist_ok=True)
+    if not (FIXTURE_DIR / "complex_marketplace_invoice.png").exists():
+        make_complex_invoice(FIXTURE_DIR / "complex_marketplace_invoice.png")
     for name, (title, lines) in SPECS.items():
         if not (FIXTURE_DIR / name).exists():
             make_image(FIXTURE_DIR / name, title, lines)

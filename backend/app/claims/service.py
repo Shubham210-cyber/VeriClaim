@@ -16,7 +16,7 @@ from app.documents.storage import sanitize_filename, store_bytes, validate_uploa
 from app.enums import (ActorType, ClaimStatus, EvidenceType, ExtractionMethod, ExtractionStatus, FactSource,
                        FieldName, Recommendation, ReviewerAction, RuleResult, Uploader)
 from app.errors import AppError
-from app.normalization.parsers import normalize_identifier, normalize_model, parse_document
+from app.normalization.parsers import Hints, normalize_identifier, normalize_model, parse_document
 from app.rules.aggregator import Aggregate, aggregate, processing_failed
 from app.rules.engine import (RULES_VERSION, ClaimView, Ctx, EvidenceView, FactView, PolicyView, RuleOutcome,
                               run_rules)
@@ -102,12 +102,14 @@ def ingest_evidence(db: Session, claim: Claim, filename: str, mime: str | None, 
         ev.extraction_status, ev.extraction_error_code = ExtractionStatus.FAILED.value, res.error_code
     else:
         ev.extracted_text = res.text[:extractor.MAX_TEXT]
-        parsed = parse_document(res, evidence_type)
-        conf = res.confidence if res.confidence is not None else 0.5
+        model = " ".join(x for x in (claim.product_brand, claim.product_model) if x) or None
+        parsed = parse_document(res, evidence_type, Hints(model=model, identifier=claim.device_identifier))
+        doc_conf = res.confidence if res.confidence is not None else 0.5
         for p in parsed:
             db.add(ExtractedFact(claim_id=claim.id, evidence_id=ev.id, source=FactSource.DOCUMENT.value,
-                                 field_name=p.field_name.value, raw_value=p.raw_value, normalized_value=p.normalized_value,
-                                 confidence=conf, source_page=p.page, source_snippet=p.snippet[:300],
+                                 field_name=p.field_name.value, raw_value=p.raw_value[:500], normalized_value=p.normalized_value,
+                                 confidence=p.confidence if p.confidence is not None else doc_conf,
+                                 source_page=p.page, source_snippet=p.snippet[:300],
                                  extraction_method=res.method.value))
         if parsed:
             ev.extraction_status = ExtractionStatus.SUCCEEDED.value
