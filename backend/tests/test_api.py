@@ -274,7 +274,7 @@ def test_demo_scenarios_with_real_ocr(client, db):
     assert {n: i["latest_recommendation"] for n, i in items.items()} == {s["number"]: s["expect"].value for s in DEMO}
     # and the queue shows a realistic spread of states
     assert {n: i["status"] for n, i in items.items() if i["status"] != "AWAITING_REVIEW"} == {
-        "CP-DEMO-005": "APPROVED", "CP-DEMO-008": "ESCALATED", "CP-DEMO-010": "AWAITING_CUSTOMER"}
+        "CP-2026-1005": "APPROVED", "CP-2026-1008": "ESCALATED", "CP-2026-1010": "AWAITING_CUSTOMER"}
     assert all(i["policy_name"] for i in items.values())
 
     def finding(number, prefix):
@@ -282,14 +282,14 @@ def test_demo_scenarios_with_real_ocr(client, db):
         return next(f for f in d["latest_evaluation"]["findings"] if f["rule_id"].startswith(prefix))
 
     # the reasons are the intended ones, not OCR accidents
-    f4 = finding("CP-DEMO-004", "CON-005")
+    f4 = finding("CP-2026-1004", "CON-005")
     assert f4["result"] == "FAIL" and f4["evidence_ids"] and f4["source_fact_ids"] and "fraud" in f4["explanation"].lower()
-    assert finding("CP-DEMO-006", "CON-002")["result"] == "FAIL"                       # IMEI digits swapped
-    assert finding("CP-DEMO-007", "POL-003")["result"] == "FAIL"                       # outside the 12 months
-    assert finding("CP-DEMO-008", "POL-007")["result"] == "FAIL"                       # above the cap
-    assert "can be read two ways" in finding("CP-DEMO-009", "POL-003")["explanation"]  # 06/04/2026 never guessed
-    assert finding("CP-DEMO-010", "EV-003")["result"] == "FAIL"                        # repair receipt missing
+    assert finding("CP-2026-1006", "CON-002")["result"] == "FAIL"                       # IMEI digits swapped
+    assert finding("CP-2026-1007", "POL-003")["result"] == "FAIL"                       # outside the 12 months
+    assert finding("CP-2026-1008", "POL-007")["result"] == "FAIL"                       # above the cap
+    assert "can be read two ways" in finding("CP-2026-1009", "POL-003")["explanation"]  # 06/04/2026 never guessed
+    assert finding("CP-2026-1010", "EV-003")["result"] == "FAIL"                        # repair receipt missing
     # clean claims stay clean: no open findings that matter
-    for n in ("CP-DEMO-001", "CP-DEMO-005"):
+    for n in ("CP-2026-1001", "CP-2026-1005"):
         d = client.get(f"{H}/claims/{items[n]['id']}").json()
         assert not [f for f in d["latest_evaluation"]["findings"] if f["result"] in ("FAIL", "INDETERMINATE") and f["category"] != "NOTE"], n

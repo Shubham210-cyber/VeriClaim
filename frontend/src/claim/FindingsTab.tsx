@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { downloadUrl, label } from '../api'
 import { Badge } from '../components/ui'
-import type { Evidence, Fact, Finding } from '../types'
+import type { ClaimDetail, Evidence, Fact, Finding } from '../types'
+import { friendly } from './pack'
 import { pretty } from './format'
 
-interface Props { findings: Finding[]; facts: Map<string, Fact>; evidence: Map<string, Evidence>; claimId: string }
+interface Props { detail: ClaimDetail; findings: Finding[]; facts: Map<string, Fact>; evidence: Map<string, Evidence>; claimId: string }
 
-// The backend appends source notes in brackets for traceability; the UI shows sources as links instead.
-const clean = (s: string) => s.replace(/\s*\((?:Source|No source fact)[^)]*\)\.?\s*$/, '')
-
-export default function FindingsTab({ findings, facts, evidence, claimId }: Props) {
+export default function FindingsTab({ detail, findings, facts, evidence, claimId }: Props) {
+  // Plain wording for users: no internal codes, policy IDs, or the bracketed source notes (sources are shown as links).
+  const clean = (s: string) => friendly(s, detail)
   const [tech, setTech] = useState(false)
   const [showOk, setShowOk] = useState(false)
   const visible = findings.filter((f) => f.result !== 'NOT_APPLICABLE' && f.rule_id !== 'SYS-002_AI_UNAVAILABLE')

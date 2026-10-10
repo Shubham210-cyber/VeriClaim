@@ -26,7 +26,6 @@ export default function ClaimsQueue() {
   const [group, setGroup] = useState('all')
   const [data, setData] = useState<Page | null>(null)
   const [err, setErr] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
 
   const load = useCallback(async () => {
     setErr(null)
@@ -42,10 +41,6 @@ export default function ClaimsQueue() {
     (data?.items ?? []).filter((c) => g.id === 'all' || g.statuses.includes(c.status)).length])), [data])
   const rows = (data?.items ?? []).filter((c) => group === 'all' || GROUPS.find((g) => g.id === group)!.statuses.includes(c.status))
 
-  const seed = async () => {
-    setBusy(true)
-    try { await api.post('/demo/seed'); await load() } catch (e) { setErr((e as Error).message) } finally { setBusy(false) }
-  }
   const noClaimsAtAll = data && data.total === 0 && !q && !device
 
   return (
@@ -68,7 +63,6 @@ export default function ClaimsQueue() {
           </ol>
           <div className="row center-row">
             <Link className="btn primary lg" to="/claims/new">Create your first claim</Link>
-            <button className="btn lg" onClick={seed} disabled={busy}>{busy ? 'Adding…' : 'Or explore with 4 sample claims'}</button>
           </div>
         </div>
       )}
@@ -114,7 +108,6 @@ export default function ClaimsQueue() {
               </table>
             </div>
           )}
-          <p className="muted small foot-link">Just exploring? <button className="link" onClick={seed} disabled={busy}>{busy ? 'Adding…' : 'Add sample claims'}</button></p>
         </>
       )}
     </>

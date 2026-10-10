@@ -92,7 +92,7 @@ export default function ClaimDetailPage() {
           { id: 'history', label: 'History' },
         ]} />
         <div className="tab-panel" role="tabpanel">
-          {tab === 'findings' && (ev ? <FindingsTab findings={ev.findings} facts={facts} evidence={new Map(d.evidence.map((e) => [e.id, e]))} claimId={c.id} />
+          {tab === 'findings' && (ev ? <FindingsTab detail={d} findings={ev.findings} facts={facts} evidence={new Map(d.evidence.map((e) => [e.id, e]))} claimId={c.id} />
             : <p className="muted">Nothing to show yet. Add the customer's documents in the Documents tab and the review will run automatically.</p>)}
           {tab === 'documents' && <DocumentsTab claimId={c.id} slots={slots} evidence={d.evidence} busyType={busyType} onUpload={(f, t) => void upload(f, t)} />}
           {tab === 'details' && <DetailsTab d={d} />}

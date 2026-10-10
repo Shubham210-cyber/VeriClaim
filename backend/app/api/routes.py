@@ -93,7 +93,6 @@ def claim_detail(claim_id: str, db: Session = Depends(get_db)):
         "decisions": [ser.decision_out(x) for x in decisions], "timeline": [ser.audit_out(a) for a in audit],
         "upload_requests": [{"id": r.id, "requested_items": r.requested_items, "expires_at": ser.ts(r.expires_at),
                              "revoked": r.revoked_at is not None, "remaining_uploads": r.max_uploads - r.upload_count} for r in reqs],
-        "synthetic_notice": "Synthetic Hackathon Data - Not a Real Insurance Decision",
     }
 
 
@@ -205,9 +204,9 @@ def public_upload(request: Request, file: UploadFile = File(...), evidence_type:
     return {"status": "received", "extraction_status": e.extraction_status, "remaining_uploads": r.max_uploads - r.upload_count}
 
 
-# ------------------------------------------------------------------ demo
+# ------------------------------------------------------------------ seed data (CLI/admin use; no UI button)
 @router.post("/demo/seed")
 def demo_seed(db: Session = Depends(get_db)):
-    """One-click seeded demo claims (synthetic data). Idempotent."""
+    """Create the bundled example claims. Idempotent."""
     from app.demo.seed import seed_demo
     return {"created": seed_demo(db)}

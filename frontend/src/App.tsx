@@ -15,8 +15,7 @@ const Logo = () => (
 
 const Footer = () => (
   <footer className="footer no-print">
-    Demo environment: all claims, people, devices and policies are synthetic. Recommendations are decision support for a human
-    reviewer and are not real insurance decisions.
+    VeriClaim recommendations are decision support for a human reviewer. The reviewer makes every final decision.
   </footer>
 )
 
@@ -30,7 +29,6 @@ export default function App() {
             <nav className="nav no-print">
               <Link to="/" className="brand"><Logo />VeriClaim</Link>
               <span className="tagline">Evidence-based claim review</span>
-              <span className="pill" title="All data in this environment is synthetic">Demo data</span>
             </nav>
             <main className="container">
               <Routes>

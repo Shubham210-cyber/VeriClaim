@@ -42,3 +42,6 @@ Code layout: `backend/` (FastAPI), `frontend/` (Vite React TS), `docs/`,
 
 - Demo data v2: 10 seeded claims + realistic generated invoices; parser hardened using the 4 sample documents in new_demo/ (git-ignored). 60 backend tests pass; browser suites pass.
 
+
+- Removed demo/synthetic/sample wording from the product (see DECISIONS.md). Verified by scanning 72 live views; 60 backend tests pass.
+

@@ -253,7 +253,7 @@ def pol_003(c: Ctx):
                     C.CONFLICT, facts=[inc, pur], reason_code="INCIDENT_BEFORE_PURCHASE", recommended_action="Clarify dates with the customer.")
     if days > c.policy.coverage_days:
         return _out(rid, R.FAIL, S.HIGH, "Outside coverage window",
-                    f"Incident was {days} days after purchase; the synthetic policy covers {c.policy.coverage_days} days.",
+                    f"Incident was {days} days after purchase; this cover allows {c.policy.coverage_days} days.",
                     C.REJECTION_CANDIDATE, facts=[inc, pur], reason_code="OUTSIDE_COVERAGE_WINDOW")
     return _out(rid, R.PASS, S.INFO, t, f"Incident was {days} days after purchase (limit {c.policy.coverage_days}).", facts=[inc, pur])
 
@@ -281,7 +281,7 @@ def pol_005(c: Ctx):
                     "The event type is unclassified; a reviewer must classify it before coverage can be decided.", C.AMBIGUOUS,
                     reason_code="EVENT_UNCLASSIFIED", recommended_action="Select the event type.")
     if et in c.policy.covered:
-        return _out(rid, R.PASS, S.INFO, t, f"{et} is a covered event under this synthetic policy.", facts=[c.claim_fact(FieldName.EVENT_DESCRIPTION)])
+        return _out(rid, R.PASS, S.INFO, t, f"{et} is a covered event under this cover.", facts=[c.claim_fact(FieldName.EVENT_DESCRIPTION)])
     return _out(rid, R.FAIL, S.MEDIUM, "Event not listed as covered",
                 f"{et} is neither covered nor explicitly excluded by this policy; reviewer judgment needed.", C.AMBIGUOUS,
                 facts=[c.claim_fact(FieldName.EVENT_DESCRIPTION)], reason_code="EVENT_NOT_COVERED")
@@ -292,7 +292,7 @@ def pol_006(c: Ctx):
     et = c.claim.event_type
     if et and et in c.policy.excluded:
         return _out(rid, R.FAIL, S.HIGH, "Event explicitly excluded by policy",
-                    f"The reviewer-classified event {et} is explicitly excluded by synthetic policy {c.policy.id}.",
+                    f"The reviewer-classified event {et} is explicitly excluded under this cover.",
                     C.REJECTION_CANDIDATE, facts=[c.claim_fact(FieldName.EVENT_DESCRIPTION)],
                     reason_code="EVENT_EXCLUDED", recommended_action="Confirm classification, then reject citing the policy exclusion.")
     if et and et != "OTHER":

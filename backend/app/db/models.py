@@ -39,7 +39,7 @@ class Policy(Base):
     requires_repair_receipt_if_repaired: Mapped[bool] = mapped_column(Boolean, default=False)
     cap_is_eligibility_ceiling: Mapped[bool] = mapped_column(Boolean, default=False)
     note: Mapped[str] = mapped_column(Text, default="")
-    source_label: Mapped[str] = mapped_column(String, default="SYNTHETIC_DEMO_POLICY")
+    source_label: Mapped[str] = mapped_column(String, default="STANDARD")
 
 
 class Claim(Base):

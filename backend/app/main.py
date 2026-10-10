@@ -16,7 +16,7 @@ log = logging.getLogger("claimproof")
 
 def create_app() -> FastAPI:
     app = FastAPI(title="ClaimProof (VeriClaim) API", version="0.1.0",
-                  description="Synthetic Hackathon Data - Not a Real Insurance Decision. Reviewer decision support only.")
+                  description="Evidence-based claim review. Reviewer decision support only.")
     app.add_middleware(CORSMiddleware, allow_origins=[settings.frontend_origin], allow_methods=["*"],
                        allow_headers=["*"])
 

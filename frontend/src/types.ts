@@ -39,7 +39,7 @@ export interface AuditEvent {
 export interface UploadReq { id: string; requested_items: RequestedItem[]; expires_at: string; revoked: boolean; remaining_uploads: number }
 export interface ClaimDetail {
   claim: Claim; latest_evaluation: Evaluation | null; evidence: Evidence[]; claim_record_facts: Fact[]
-  decisions: Decision[]; timeline: AuditEvent[]; upload_requests: UploadReq[]; synthetic_notice: string
+  decisions: Decision[]; timeline: AuditEvent[]; upload_requests: UploadReq[]
 }
 export interface Policy {
   id: string; name: string; product_type: string; claim_type: string; covered_event_types: string[]

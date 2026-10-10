@@ -21,7 +21,7 @@ def policy_out(p: Policy) -> dict:
             "requires_device_identifier": p.requires_device_identifier, "required_evidence_types": p.required_evidence_types,
             "requires_incident_description": p.requires_incident_description,
             "requires_repair_receipt_if_repaired": p.requires_repair_receipt_if_repaired,
-            "cap_is_eligibility_ceiling": p.cap_is_eligibility_ceiling, "note": p.note, "source_label": p.source_label}
+            "cap_is_eligibility_ceiling": p.cap_is_eligibility_ceiling, "note": p.note}
 
 
 def claim_summary(c: Claim, rec: str | None = None, pname: str | None = None) -> dict:

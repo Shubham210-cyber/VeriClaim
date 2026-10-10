@@ -34,7 +34,7 @@ export default function CustomerUpload() {
             <Item key={i} item={it} token={token} disabled={info.remaining_uploads <= 0} done={done.includes(it.item_type + i)}
               onDone={() => { setDone([...done, it.item_type + i]); load() }} />
           ))}
-          <p className="muted small">Accepted: PDF, PNG, JPEG or text files up to 10 MB. Demo environment: please use fake or sample documents only.</p>
+          <p className="muted small">Accepted: PDF, PNG, JPEG or text files up to 10 MB.</p>
         </>
       )}
     </div>

@@ -74,7 +74,7 @@ export default function DecisionPackPage() {
       </section>
 
       <section className="card casefile">
-        <header className="file-head"><div><div className="eyebrow">Case file</div><h2>{c.claim_number} · {device}</h2></div><div className="muted small right">Generated {fmtDate(new Date().toISOString())}<br />Synthetic demo data</div></header>
+        <header className="file-head"><div><div className="eyebrow">Case file</div><h2>{c.claim_number} · {device}</h2></div><div className="muted small right">Generated {fmtDate(new Date().toISOString())}</div></header>
 
         <h3 className="file-h">Summary</h3>
         <dl className="kvs compact">
@@ -114,7 +114,7 @@ export default function DecisionPackPage() {
         <ol className="file-history">
           {d.timeline.map((t) => { const e = describeEvent(t); return <li key={t.id}><span className="muted small">{fmtDate(t.created_at)}</span> {e.text}{e.note ? ` — “${e.note}”` : ''}</li> })}
         </ol>
-        <p className="muted small fine">Decision support only: the system checks documents against the cover and cannot decide a claim. All data in this demo is synthetic.</p>
+        <p className="muted small fine">Decision support only: the system checks documents against the cover and cannot decide a claim.</p>
       </section>
     </div>
   )

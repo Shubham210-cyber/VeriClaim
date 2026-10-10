@@ -1,4 +1,4 @@
-"""Seeded SYNTHETIC policies (docs/DEMO_DATA.md). Rules live in structured data."""
+"""Bundled cover definitions. Rules live in structured data."""
 from sqlalchemy.orm import Session
 
 from app.db.models import Policy

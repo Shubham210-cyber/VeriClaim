@@ -70,7 +70,7 @@ def test_excluded_event_recommends_rejection_with_policy_reference():
     c = ctx(cl=claim(event_type="ACCIDENTAL_DAMAGE"))
     assert rec(c) == Rec.RECOMMENDED_REJECTION
     o = by_id(run_rules(c))["POL-006"]
-    assert o.result == R.FAIL and "policy P" in o.explanation and o.reason_code == "EVENT_EXCLUDED"
+    assert o.result == R.FAIL and "explicitly excluded" in o.explanation and "synthetic" not in o.explanation.lower() and o.reason_code == "EVENT_EXCLUDED"
 
 
 def test_exclusion_outranks_missing_invoice():

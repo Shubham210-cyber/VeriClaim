@@ -1,4 +1,4 @@
-﻿# VeriClaim (ClaimProof)
+# VeriClaim (ClaimProof)
 
 Evidence-based **reviewer decision support** for laptop and mobile-phone warranty/insurance claims.
 Deterministic rules decide eligibility checks; AI (optional) only summarizes. Nothing here is a real
@@ -26,21 +26,28 @@ npm install
 npm run dev          # http://localhost:5173
 ```
 
-Open http://localhost:5173 and click **Add sample claims** (creates 4 synthetic claims by running the real
-upload/OCR/rules pipeline). No API key is needed; `AI_PROVIDER=mock` is the default.
+Open http://localhost:5173. To fill the queue with ten example claims (run through the real upload/OCR/rules
+pipeline), run once from `backend/`:
 
-| Demo claim | Scenario | Recommendation | Queue state |
+```powershell
+.\.venv\Scripts\python -m app.demo.seed
+```
+
+The app has no seeding button; the same thing is available as `POST /api/v1/demo/seed`. No API key is needed;
+`AI_PROVIDER=mock` is the default.
+
+| Example claim | Scenario | Recommendation | Queue state |
 |---|---|---|---|
-| CP-DEMO-001 | Laptop warranty, everything consistent | Approve | Awaiting review |
-| CP-DEMO-002 | Laptop insurance, no purchase invoice | More information | Awaiting review |
-| CP-DEMO-003 | Accidental damage under a warranty (explicit exclusion) | Decline | Awaiting review |
-| CP-DEMO-004 | Repair receipt predates the reported incident | Human review | Awaiting review |
-| CP-DEMO-005 | Phone insurance, clean claim with payout estimate | Approve | Approved |
-| CP-DEMO-006 | Phone warranty, IMEI digits swapped vs the invoice | Human review | Awaiting review |
-| CP-DEMO-007 | Laptop warranty, incident 587 days after purchase | Decline | Awaiting review |
-| CP-DEMO-008 | Laptop insurance, claim above the maximum payable | Human review | Escalated |
-| CP-DEMO-009 | Phone insurance, purchase date printed `06/04/2026` (never guessed) | More information | Awaiting review |
-| CP-DEMO-010 | Phone insurance, repair done but receipt missing | More information | Waiting for customer |
+| CP-2026-1001 | Laptop warranty, everything consistent | Approve | Awaiting review |
+| CP-2026-1002 | Laptop insurance, no purchase invoice | More information | Awaiting review |
+| CP-2026-1003 | Accidental damage under a warranty (explicit exclusion) | Decline | Awaiting review |
+| CP-2026-1004 | Repair receipt predates the reported incident | Human review | Awaiting review |
+| CP-2026-1005 | Phone insurance, clean claim with payout estimate | Approve | Approved |
+| CP-2026-1006 | Phone warranty, IMEI digits swapped vs the invoice | Human review | Awaiting review |
+| CP-2026-1007 | Laptop warranty, incident 587 days after purchase | Decline | Awaiting review |
+| CP-2026-1008 | Laptop insurance, claim above the maximum payable | Human review | Escalated |
+| CP-2026-1009 | Phone insurance, purchase date printed `06/04/2026` (never guessed) | More information | Awaiting review |
+| CP-2026-1010 | Phone insurance, repair done but receipt missing | More information | Waiting for customer |
 
 The invoices are generated, realistic shop-style documents (GST table, IMEI line, amount in words, Indian number
 formatting), all stamped FAKE; `demo_fixtures/` is regenerated automatically when its version changes.
@@ -62,7 +69,7 @@ formatting), all stamped FAKE; `demo_fixtures/` is regenerated automatically whe
    never contain internal codes or the word "fraud", and the reviewer's internal note stays in the case file only.
    Nothing is sent automatically; use Copy or Print / Save as PDF.
 
-Try the customer flow: open CP-DEMO-002 -> *Ask customer for info* -> *Create link* -> copy the link,
+Try the customer flow: open CP-2026-1002 -> *Ask customer for info* -> *Create link* -> copy the link,
 open it in a private window, send one of the images in `demo_fixtures/`, then reload the claim.
 
 ## Tests

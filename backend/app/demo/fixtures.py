@@ -1,4 +1,4 @@
-"""Generate synthetic demo documents. Every image is stamped FAKE - SYNTHETIC DEMO DOCUMENT.
+"""Generate fictional example documents. Every image is stamped FAKE DOCUMENT.
 
 Documents imitate real-world layouts (shop GST invoices with item tables and IMEI lines, marketplace invoices,
 service receipts) because the point of the demo is to show the reader coping with messy documents.
@@ -13,8 +13,8 @@ from PIL import Image, ImageDraw, ImageFont
 from app.config import ROOT
 
 FIXTURE_DIR = ROOT / "demo_fixtures"
-FIXTURE_VERSION = "3"  # bump to regenerate every file
-BANNER = "FAKE - SYNTHETIC DEMO DOCUMENT"
+FIXTURE_VERSION = "4"  # bump to regenerate every file
+BANNER = "FAKE DOCUMENT"
 INK, BLUE, RED, GREY = (20, 20, 20), (28, 74, 150), (190, 30, 30), (90, 90, 90)
 _REG = [r"C:\Windows\Fonts\arial.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]
 _BOLD = [r"C:\Windows\Fonts\arialbd.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]
@@ -88,7 +88,7 @@ class Item:
 def make_retail_invoice(path: Path, *, shop: str, tagline: str, address: tuple[str, str], phone: str, gstin: str,
                         inv_no: str, date_label: str, date_text: str, customer: str, place: str, items: list[Item],
                         words_label: str | None = "Total in words", subtotal_row: bool = False, gst_rate: int = 18,
-                        bank: tuple[str, str, str] = ("Demo Bank", "Test Branch", "0000000000")) -> Decimal:
+                        bank: tuple[str, str, str] = ("Unity Cooperative Bank", "Main Branch", "0000000000")) -> Decimal:
     """Shop-style GST tax invoice. Returns the grand total."""
     W, H = 1100, 1180 + 76 * len(items)
     img = Image.new("RGB", (W, H), "white")
@@ -237,18 +237,18 @@ def make_marketplace_invoice(path: Path) -> None:
     f, b = _font(15), _font(17)
     dr.text((470, 70), "Tax Invoice/Bill of Supply/Cash Memo", fill="black", font=b)
     dr.text((20, 120), "Sold By:", fill="black", font=b)
-    dr.text((20, 145), "Fake Mart Private Limited\nSample Street 1, Test City, 560001\nIN", fill="black", font=f)
+    dr.text((20, 145), "Greenfield Retail Private Limited\n14 Lake View Road, Bengaluru, 560034\nIN", fill="black", font=f)
     dr.text((560, 120), "Billing Address:", fill="black", font=b)
-    dr.text((560, 145), "Test Customer\n12 Demo Lane, Test City", fill="black", font=f)
+    dr.text((560, 145), "Rahul Menon\n12 Lake Lane, Bengaluru", fill="black", font=f)
     dr.text((20, 240), "GST Registration No: 29AAAAA0000A1Z5", fill="black", font=b)
     dr.text((20, 300), "Order Number: 000-1234567-7654321", fill="black", font=b)
     dr.text((20, 325), "Order Date: 30.03.2026", fill="black", font=b)
-    dr.text((470, 300), "Invoice Number: FAKE-7547", fill="black", font=b)
-    dr.text((470, 325), "Invoice Details: KA-FAKE-143189331", fill="black", font=b)
+    dr.text((470, 300), "Invoice Number: KA-7547", fill="black", font=b)
+    dr.text((470, 325), "Invoice Details: KA-INV-143189331", fill="black", font=b)
     dr.text((470, 350), "Invoice Date: 30.03.2026", fill="black", font=b)
     dr.rectangle([20, 400, 880, 560], outline="black")
     dr.text((28, 408), "Sl.   Description                                   Unit Price  Qty  Net Amount  Tax Rate  Tax Amount  Total Amount", fill="black", font=_font(12))
-    dr.text((28, 440), "1     Aurora A5 (Midnight/Black) | B0FAKE1234 ( Aurora A5 (Midnight/Black) )", fill="black", font=f)
+    dr.text((28, 440), "1     Aurora A5 (Midnight/Black) | B0XQ7R1234 ( Aurora A5 (Midnight/Black) )", fill="black", font=f)
     dr.text((60, 462), "HSN:8517", fill="black", font=f)
     dr.text((560, 462), "₹21,428.57   1   ₹21,428.57   12%   ₹2,571.43   ₹24,000.00", fill="black", font=_font(13))
     dr.text((28, 530), "TOTAL:                                                     ₹2,571.43    ₹24,000.00", fill="black", font=b)
@@ -273,17 +273,17 @@ def build_all(out: Path) -> None:
     # 001 laptop warranty, clean
     retail("cp001_invoice.png", shop="Digital Hub Electronics", tagline="Laptops, phones and accessories. Easy EMI available",
            address=("Shop 14, Tech Plaza, MG Road", "Bengaluru, Karnataka - 560001"), phone="080 1234 5678", gstin="29FAKE1001A1Z5",
-           inv_no="DH/2026/0412", date_label="Invoice Date", date_text="01-Jun-2026", customer="Aarav Demo", place="Karnataka (29)",
+           inv_no="DH/2026/0412", date_label="Invoice Date", date_text="01-Jun-2026", customer="Aarav Mehta", place="Karnataka (29)",
            items=[Item("Northstar N14 Laptop 16GB/512GB", D("65000.00"), "Serial No: NS-N14-000123", hsn="8471")])
     # 003 laptop warranty, accidental damage claim
     retail("cp003_invoice.png", shop="Metro Computers", tagline="Authorised retailer. Genuine products only",
            address=("12, Brigade Road", "Bengaluru, Karnataka - 560025"), phone="080 2222 3344", gstin="29FAKE1003C1Z9",
-           inv_no="MC/26/0387", date_label="Invoice Date", date_text="15-Mar-2026", customer="Meera Sample", place="Karnataka (29)",
+           inv_no="MC/26/0387", date_label="Invoice Date", date_text="15-Mar-2026", customer="Meera Iyer", place="Karnataka (29)",
            items=[Item("Northstar N14 Laptop 16GB/512GB", D("62000.00"), "Serial No: NS-N14-000789", hsn="8471")])
     # 004 phone insurance + repair receipt (date conflict)
     retail("cp004_invoice.png", shop="Shree Mobile Point", tagline="Get all your desired smart phones on huge discounts and easy EMI",
            address=("G/45, Vasant Lok Complex", "Pune, Maharashtra - 411001"), phone="020 4455 6677", gstin="27FAKE1004D1Z3",
-           inv_no="47", date_label="Invoice Date", date_text="01-Jul-2026", customer="Rohan Demo", place="Maharashtra (27)",
+           inv_no="47", date_label="Invoice Date", date_text="01-Jul-2026", customer="Rohan Kulkarni", place="Maharashtra (27)",
            items=[Item("Aurora A5 5G (8GB/128GB)", D("24000.00"), "IMEI 356938035643809"),
                   Item("20W USB-C Power Adapter", D("1500.00"), hsn="8504")])
     make_service_receipt(out / "cp004_repair_receipt.png", centre="Aurora Care Service Centre", address="Shop 3, Service Lane, Pune - 411002",
@@ -292,36 +292,36 @@ def build_all(out: Path) -> None:
     # 005 phone insurance, clean (approved by a reviewer in the seed)
     retail("cp005_invoice.png", shop="Zenith Telecom World", tagline="All brands, one roof. Exchange offers daily",
            address=("221, Linking Road", "Mumbai, Maharashtra - 400050"), phone="022 6677 8899", gstin="27FAKE1005E1Z1",
-           inv_no="ZT-8841", date_label="Invoice Date", date_text="18-May-2026", customer="Isha Sample", place="Maharashtra (27)",
+           inv_no="ZT-8841", date_label="Invoice Date", date_text="18-May-2026", customer="Isha Shah", place="Maharashtra (27)",
            items=[Item("Zenith Z9 Pro (12GB/256GB)", D("32999.00"), "IMEI 490154203237518")])
     # 006 phone warranty, IMEI differs (invoice shows ...418, claim says ...481)
     retail("cp006_invoice.png", shop="Lumen Mobiles", tagline="Smartphones | Tablets | Accessories",
            address=("7, Anna Salai", "Chennai, Tamil Nadu - 600002"), phone="044 3344 5566", gstin="33FAKE1006F1Z7",
-           inv_no="LM/0099", date_label="Invoice Date", date_text="20-Jan-2026", customer="Karthik Demo", place="Tamil Nadu (33)",
+           inv_no="LM/0099", date_label="Invoice Date", date_text="20-Jan-2026", customer="Karthik Raman", place="Tamil Nadu (33)",
            items=[Item("Lumen L3 (6GB/128GB)", D("18499.00"), "IMEI 352099001761418")], subtotal_row=True)
     # 007 laptop warranty, outside the 12 month window
     retail("cp007_invoice.png", shop="Capital Laptops", tagline="Specialists in business laptops",
            address=("Unit 5, Nehru Place", "New Delhi - 110019"), phone="011 5566 7788", gstin="07FAKE1007G1Z2",
-           inv_no="CL-5531", date_label="Date", date_text="10-Feb-2025", customer="Nikhil Sample", place="Delhi (07)",
+           inv_no="CL-5531", date_label="Date", date_text="10-Feb-2025", customer="Nikhil Bansal", place="Delhi (07)",
            items=[Item("Northstar N15 Laptop 16GB/1TB", D("84000.00"), "Serial No: NS-N15-000842", hsn="8471")])
     # 008 laptop insurance over the cap
     retail("cp008_invoice.png", shop="Digital Hub Electronics", tagline="Laptops, phones and accessories. Easy EMI available",
            address=("Shop 14, Tech Plaza, MG Road", "Bengaluru, Karnataka - 560001"), phone="080 1234 5678", gstin="29FAKE1001A1Z5",
-           inv_no="DH/2026/0129", date_label="Invoice Date", date_text="05-Feb-2026", customer="Divya Demo", place="Karnataka (29)",
+           inv_no="DH/2026/0129", date_label="Invoice Date", date_text="05-Feb-2026", customer="Divya Rao", place="Karnataka (29)",
            items=[Item("Northstar N14 Laptop 32GB/1TB", D("78000.00"), "Serial No: NS-N14-000555", hsn="8471")])
     # 009 phone insurance, purchase date written 06/04/2026 (ambiguous: 6 April or 4 June)
     retail("cp009_invoice.png", shop="Vega Mobile Hub", tagline="Best prices on the latest smartphones",
            address=("Shop 9, Station Road", "Trichy, Tamil Nadu - 620001"), phone="0431 223344", gstin="33FAKE1009H1Z4",
-           inv_no="122026/1266", date_label="Date", date_text="06/04/2026", customer="Mowni Sample", place="Tamil Nadu (33)",
+           inv_no="122026/1266", date_label="Date", date_text="06/04/2026", customer="Mowni Krishnan", place="Tamil Nadu (33)",
            items=[Item("Vega V1 (8GB/128GB)", D("21999.00"), "IMEI 861234050987654")], words_label="Amount in Words", subtotal_row=True)
     # 010 phone insurance, repair already done but no receipt yet
     retail("cp010_invoice.png", shop="Nimbus Phones", tagline="Authorised partner. Service and support",
            address=("14, Park Street", "Kolkata, West Bengal - 700016"), phone="033 7788 9900", gstin="19FAKE1010J1Z6",
-           inv_no="NP-3120", date_label="Invoice Date", date_text="10-Jun-2026", customer="Sneha Demo", place="West Bengal (19)",
+           inv_no="NP-3120", date_label="Invoice Date", date_text="10-Jun-2026", customer="Sneha Roy", place="West Bengal (19)",
            items=[Item("Nimbus N2 (8GB/256GB)", D("27999.00"), "IMEI 867530123456780")])
     make_marketplace_invoice(out / "complex_marketplace_invoice.png")
     (out / "cp002_statement.txt").write_text(
-        "FAKE - SYNTHETIC DEMO DOCUMENT\nCustomer Statement\nIncident Date: 2026-10-02\n"
+        "FAKE DOCUMENT\nCustomer Statement\nIncident Date: 2026-10-02\n"
         "Description: Laptop slipped from desk and the screen cracked.\n", encoding="utf-8")
 
 

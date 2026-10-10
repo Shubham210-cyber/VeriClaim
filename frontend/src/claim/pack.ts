@@ -25,6 +25,7 @@ export function friendly(s: string, d: ClaimDetail): string {
   const cover = d.claim.policy_name ?? 'your cover'
   return clean(s)
     .replace(/(?:by |under )?synthetic policy\s+[A-Z0-9][A-Z0-9-]+/gi, `under your cover (${cover})`)
+    .replace(/\b(?:the|this) synthetic policy\b/gi, 'this cover') // text stored by earlier reviews
     .replace(/\b[A-Z]{2,}(?:_[A-Z]+)+\b/g, (t) => label(t).toLowerCase())
     .replace(/The reviewer-classified event (.+?) is /i, 'The reported cause of the incident ($1) is ')
 }
